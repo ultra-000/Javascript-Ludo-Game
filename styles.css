@@ -1,0 +1,39 @@
+body,
+html {
+  color: white;
+  margin: 0px;
+  padding: 0px;
+  font-family: "Rubik";
+  background-color: black;
+}
+
+#playground {
+  color: black;
+  background-color: rgb(255, 255, 255);
+  width: 750px;
+  height: 750px;
+}
+
+.visual-output {
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  padding: 20px;
+  margin: 10px;
+  border-radius: 5px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.dice-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 750px;
+}

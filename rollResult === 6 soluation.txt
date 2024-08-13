@@ -1,0 +1,7 @@
+if (
+          player.x === 400 &&
+          player.y === 0 &&
+          rollResult === BLOCK_SIZE * 6
+        ) {
+          player.x += BLOCK_SIZE;
+        }
