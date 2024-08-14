@@ -1,3 +1,35 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const popUpDiv = document.createElement("div");
+  popUpDiv.classList.add("popup");
+  popUpDiv.innerHTML = `
+    <h2>Welcome to Ludo!</h2>
+    <p>This is a simple implementation of the classic Ludo game.</p>
+    <h4>Please choose your plyers:</h4>
+    <div class="choose-container">
+    <div class="parent">
+    <span class="red-player"></span>
+    <input type="checkbox">
+    </div>
+    <div class="parent">
+    <span class="green-player"></span>
+    <input type="checkbox">
+    </div>
+    <div class="parent">
+    <span class="yellow-player"></span>
+    <input type="checkbox">
+    </div>
+    <div class="parent">
+    <span class="blue-player"></span>
+    <input type="checkbox">
+    </div>
+    </div>
+    <div class="button-parent">
+    <button class="start-button">Start</button>
+    </div>
+    `;
+  document.body.appendChild(popUpDiv);
+});
+
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById("playground");
 /** @type {CanvasRenderingContext2D} */
@@ -91,34 +123,6 @@ class Players {
     ctx.closePath();
   }
 }
-
-const player = new Players(
-  50,
-  300,
-  "redToken1",
-  "assets/images/red_ludo_token1.png"
-);
-
-const player2 = new Players(
-  150 / 2,
-  350 / 2,
-  "redToken2",
-  "assets/images/red_ludo_token1.png"
-);
-
-const player3 = new Players(
-  350 / 2,
-  150 / 2,
-  "redToken3",
-  "assets/images/red_ludo_token1.png"
-);
-
-const player4 = new Players(
-  350 / 2,
-  350 / 2,
-  "redToken4",
-  "assets/images/red_ludo_token1.png"
-);
 
 const detectLocation = () => {
   if (player.x >= 0 && player.x <= 300 && player.y === 300) return "line0";
@@ -315,6 +319,18 @@ const positions = [
     { x: 0, y: 450 },
     { x: 250, y: 450 },
   ],
+  [{ x: 50, y: 350 }],
+  [{ x: 350, y: 50 }],
+  [{ x: 400, y: 350 }],
+  [{ x: 350, y: 400 }],
+  [{ x: 300, y: 350 }],
+  [{ x: 300, y: 300 }],
+  [{ x: 400, y: 300 }],
+  [{ x: 350, y: 400 }],
+  [{ x: 50, y: 300 }],
+  [{ x: 400, y: 50 }],
+  [{ x: 650, y: 400 }],
+  [{ x: 300, y: 650 }],
 ];
 
 const drawBases = (
@@ -392,17 +408,20 @@ const drawGame = () => {
   drawBases(true, 1, "limegreen");
   drawBases(true, 2, "yellow");
   drawBases(true, 3, "#00BFFF");
+  drawBases(false, 4, "red", 300, BLOCK_SIZE);
+  drawBases(false, 5, "limegreen", BLOCK_SIZE, 300);
+  drawBases(false, 6, "yellow", 300, BLOCK_SIZE);
+  drawBases(false, 7, "#00BFFF", BLOCK_SIZE, 300);
+  drawBases(false, 8, "red", BLOCK_SIZE, 100);
+  drawBases(false, 9, "limegreen", 100, BLOCK_SIZE);
+  drawBases(false, 10, "yellow", BLOCK_SIZE, 100);
+  drawBases(false, 11, "#00BFFF", 100, BLOCK_SIZE);
+  drawBases(false, 12, "red", BLOCK_SIZE, BLOCK_SIZE);
+  drawBases(false, 13, "limegreen", BLOCK_SIZE, BLOCK_SIZE);
+  drawBases(false, 14, "yellow", BLOCK_SIZE, BLOCK_SIZE);
+  drawBases(false, 15, "#00BFFF", BLOCK_SIZE, BLOCK_SIZE);
   drawHorizontalBorders();
   drawVerticalBorders();
-  if (player.totalMoves > maxMovesOnTrack) {
-    player.x = 0;
-    player.y = 350;
-    player.x += player.totalMoves - maxMovesOnTrack;
-  }
-  player.draw();
-  player2.draw();
-  player3.draw();
-  player4.draw();
   requestAnimationFrame(drawGame);
 };
 

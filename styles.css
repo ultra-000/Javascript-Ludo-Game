@@ -37,3 +37,111 @@ html {
   align-items: center;
   height: 750px;
 }
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(7px);
+  padding: 20px;
+  border-radius: 5px;
+  z-index: 100;
+}
+
+/* .red-parent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.blue-parent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.green-parent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.yellow-parent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+ */
+
+.parent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.red-player {
+  display: inline-block;
+  background-color: red;
+  color: white;
+  padding: 0.5rem;
+  margin: 0.5rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+
+.green-player {
+  display: inline-block;
+  background-color: limegreen;
+  color: white;
+  padding: 0.5rem;
+  margin: 0.5rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+
+.yellow-player {
+  display: inline-block;
+  background-color: yellow;
+  color: white;
+  padding: 0.5rem;
+  margin: 0.5rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+
+.blue-player {
+  display: inline-block;
+  background-color: #00bfff;
+  color: white;
+  padding: 0.5rem;
+  margin: 0.5rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+
+.start-button {
+  margin: 0.5rem;
+  padding: 0.8rem;
+  background-color: #1a6eff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.button-parent {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
