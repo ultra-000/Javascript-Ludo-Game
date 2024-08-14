@@ -1,35 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const popUpDiv = document.createElement("div");
-  popUpDiv.classList.add("popup");
-  popUpDiv.innerHTML = `
-    <h2>Welcome to Ludo!</h2>
-    <p>This is a simple implementation of the classic Ludo game.</p>
-    <h4>Please choose your plyers:</h4>
-    <div class="choose-container">
-    <div class="parent">
-    <span class="red-player"></span>
-    <input type="checkbox">
-    </div>
-    <div class="parent">
-    <span class="green-player"></span>
-    <input type="checkbox">
-    </div>
-    <div class="parent">
-    <span class="yellow-player"></span>
-    <input type="checkbox">
-    </div>
-    <div class="parent">
-    <span class="blue-player"></span>
-    <input type="checkbox">
-    </div>
-    </div>
-    <div class="button-parent">
-    <button class="start-button">Start</button>
-    </div>
-    `;
-  document.body.appendChild(popUpDiv);
-});
-
+// Initializing the game
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById("playground");
 /** @type {CanvasRenderingContext2D} */
@@ -59,34 +28,11 @@ const DICE_SOUND_EFFECT = new Audio(
   "assets/sound effects/dice_sound_effect.mp3"
 );
 
-const diceface = (value) => {
-  switch (value) {
-    case 1:
-      visualOutput[0].src = "assets/images/dice_face_one.png";
-      break;
-    case 2:
-      visualOutput[0].src = "assets/images/dice_face_two.png";
-      break;
-    case 3:
-      visualOutput[0].src = "assets/images/dice_face_three.png";
-      break;
-    case 4:
-      visualOutput[0].src = "assets/images/dice_face_four.png";
-      break;
-    case 5:
-      visualOutput[0].src = "assets/images/dice_face_five.png";
-      break;
-    case 6:
-      visualOutput[0].src = "assets/images/dice_face_six.png";
-      break;
-  }
-};
-
 const drawHorizontalBorders = () => {
   for (let index = 0; index < horizontalBordersAmount; index++) {
     ctx.beginPath();
     ctx.fillStyle = "black";
-    ctx.rect(index * 50, 0, 1, canvas.height);
+    ctx.rect(index * BLOCK_SIZE, 0, 1, canvas.height);
     ctx.fill();
     ctx.closePath();
   }
@@ -96,7 +42,7 @@ const drawVerticalBorders = () => {
   for (let index = 0; index < verticalBordersAmount; index++) {
     ctx.beginPath();
     ctx.fillStyle = "black";
-    ctx.rect(0, index * 50, canvas.width, 1);
+    ctx.rect(0, index * BLOCK_SIZE, canvas.width, 1);
     ctx.fill();
     ctx.closePath();
   }
@@ -123,6 +69,119 @@ class Players {
     ctx.closePath();
   }
 }
+
+// Initializing the players
+let playersCount = 0;
+const redPlayers = [];
+const greenPlayers = [];
+const yellowPlayers = [];
+const bluePlayers = [];
+
+const popUpDiv = document.createElement("div");
+document.addEventListener("DOMContentLoaded", () => {
+  popUpDiv.classList.add("popup");
+  popUpDiv.innerHTML = `
+    <h2>Welcome to Ludo!</h2>
+    <p>This is a simple implementation of the classic Ludo game.</p>
+    <h4>Please choose your plyers:</h4>
+    <div class="choose-container">
+    <div class="parent">
+    <span class="red-player"></span>
+    <input class="checkbox" type="checkbox">
+    </div>
+    <div class="parent">
+    <span class="green-player"></span>
+    <input class="checkbox" type="checkbox">
+    </div>
+    <div class="parent">
+    <span class="yellow-player"></span>
+    <input class="checkbox" type="checkbox">
+    </div>
+    <div class="parent">
+    <span class="blue-player"></span>
+    <input class="checkbox" type="checkbox">
+    </div>
+    </div>
+    <div class="button-parent">
+    <button class="start-button">Start</button>
+    </div>
+    `;
+  document.body.appendChild(popUpDiv);
+  const startButton = document.querySelector(".start-button");
+  const checkboxes = document.querySelectorAll(".checkbox");
+  let userChoice = [];
+
+  for (let index = 0; index < checkboxes.length; index++) {
+    checkboxes[index].addEventListener("click", () => {
+      if (checkboxes[index].checked) {
+        playersCount++;
+        if (
+          userChoice.includes(
+            checkboxes[index].previousElementSibling.className
+          )
+        ) {
+          return;
+        } else {
+          userChoice.push(checkboxes[index].previousElementSibling.className);
+        }
+      } else {
+        playersCount--;
+        userChoice.splice(
+          userChoice.indexOf(
+            checkboxes[index].previousElementSibling.className
+          ),
+          1
+        );
+      }
+      console.log(playersCount);
+      console.log(userChoice);
+    });
+  }
+  startButton.addEventListener("click", () => {
+    if (playersCount >= 2) {
+      document.body.removeChild(popUpDiv);
+      if (userChoice.includes("red-player")) {
+        for (let index = 0; index < 4; index++) {
+          redPlayers.push(
+            new Players(
+              150 / 2,
+              150 / 2,
+              `red-player${index}`,
+              "assets/images/red_ludo_token1.png"
+            )
+          );
+        }
+      }
+    } else {
+      alert("Please select two players at least!");
+    }
+  });
+});
+
+// main logic
+
+const diceface = (value) => {
+  switch (value) {
+    case 1:
+      visualOutput[0].src = "assets/images/dice_face_one.png";
+      break;
+    case 2:
+      visualOutput[0].src = "assets/images/dice_face_two.png";
+      break;
+    case 3:
+      visualOutput[0].src = "assets/images/dice_face_three.png";
+      break;
+    case 4:
+      visualOutput[0].src = "assets/images/dice_face_four.png";
+      break;
+    case 5:
+      visualOutput[0].src = "assets/images/dice_face_five.png";
+      break;
+    case 6:
+      visualOutput[0].src = "assets/images/dice_face_six.png";
+      break;
+  }
+};
 
 const detectLocation = () => {
   if (player.x >= 0 && player.x <= 300 && player.y === 300) return "line0";
