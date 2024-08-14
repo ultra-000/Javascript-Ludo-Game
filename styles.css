@@ -1,10 +1,25 @@
 body,
 html {
   color: white;
-  margin: 0px;
-  padding: 0px;
+  font-size: 16px;
+  margin: 0rem;
+  padding: 5rem;
   font-family: "Rubik";
-  background-color: black;
+}
+
+.background-div {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url("assets/images/background_image1.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  filter: blur(15px);
+  z-index: -100;
 }
 
 #playground {

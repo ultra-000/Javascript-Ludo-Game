@@ -1,4 +1,5 @@
 // Initializing the game
+
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById("playground");
 /** @type {CanvasRenderingContext2D} */
@@ -71,6 +72,7 @@ class Players {
 }
 
 // Initializing the players
+
 let playersCount = 0;
 const redPlayers = [];
 const greenPlayers = [];
@@ -78,6 +80,7 @@ const yellowPlayers = [];
 const bluePlayers = [];
 
 // pop up div for players selection
+
 const popUpDiv = document.createElement("div");
 document.addEventListener("DOMContentLoaded", () => {
   popUpDiv.classList.add("popup");
@@ -115,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // loop for attaching an event listener on the checkboxes
   // the event listener will be called when the checkboxes are clicked
   // which will add/remove the user choice in the userChoice array
+
   for (let index = 0; index < checkboxes.length; index++) {
     checkboxes[index].addEventListener("click", () => {
       if (checkboxes[index].checked) {
@@ -146,14 +150,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // if the players array contains more than two user choices
     // we will remove the pop up div and initialize the players
     // that the user has chosen otherwise we will abort the initialization
+
     if (playersCount >= 2) {
       document.body.removeChild(popUpDiv);
       if (userChoice.includes("red-player")) {
         for (let index = 0; index < 4; index++) {
           redPlayers.push(
             new Players(
-              150 / 2,
-              150 / 2,
+              (150 / 2) * index,
+              (150 / 2) * index,
               `red-player${index}`,
               "assets/images/red_ludo_token0.png"
             )
@@ -166,10 +171,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// players drawing function
+
+const drawPlayers = (arrayOfPlayers) => {
+  arrayOfPlayers.forEach((player) => {
+    player.draw();
+  });
+};
+
 // main logic
 
 // a function that outputs the result of the rollDice() function
 // and plays a simple animation
+
 const diceface = (value) => {
   switch (value) {
     case 1:
@@ -194,6 +208,7 @@ const diceface = (value) => {
 };
 
 // position detection
+
 const detectLocation = () => {
   if (player.x >= 0 && player.x <= 300 && player.y === 300) return "line0";
   if (player.x === 300 && player.y <= 250 && player.y >= 0) return "line1";
@@ -210,6 +225,7 @@ const detectLocation = () => {
 };
 
 // handle the player movement based on their position and the dice result
+
 const handleLines = (line) => {
   switch (line) {
     case "line0":
@@ -473,6 +489,8 @@ document.addEventListener("keypress", (e) => {
   }
 });
 
+// define the game loop function
+
 const drawGame = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBases(true, 0, "red");
@@ -493,7 +511,10 @@ const drawGame = () => {
   drawBases(false, 15, "#00BFFF", BLOCK_SIZE, BLOCK_SIZE);
   drawHorizontalBorders();
   drawVerticalBorders();
+  drawPlayers(redPlayers);
   requestAnimationFrame(drawGame);
 };
+
+// start the game loop
 
 drawGame();
