@@ -78,6 +78,43 @@ const redPlayers = [];
 const greenPlayers = [];
 const yellowPlayers = [];
 const bluePlayers = [];
+const offset = BLOCK_SIZE / 2;
+const PLAYERS_INITIAL_POSITIONS = [
+  [
+    { x: 100 - offset, y: 100 - offset },
+    { x: 200 - offset, y: 100 - offset },
+    { x: 100 - offset, y: 200 - offset },
+    { x: 200 - offset, y: 200 - offset },
+  ],
+  [
+    { x: 550 - offset, y: 100 - offset },
+    { x: 650 - offset, y: 100 - offset },
+    { x: 550 - offset, y: 200 - offset },
+    { x: 650 - offset, y: 200 - offset },
+  ],
+  [
+    { x: 550 - offset, y: 550 - offset },
+    { x: 650 - offset, y: 550 - offset },
+    { x: 550 - offset, y: 650 - offset },
+    { x: 650 - offset, y: 650 - offset },
+  ],
+  [
+    { x: 100 - offset, y: 550 - offset },
+    { x: 200 - offset, y: 550 - offset },
+    { x: 100 - offset, y: 650 - offset },
+    { x: 200 - offset, y: 650 - offset },
+  ],
+];
+
+// function for creating the players objects
+
+const createPlayers = (array, playersArray, id, imagePath) => {
+  let index = 0;
+  for (pos of array) {
+    playersArray.push(new Players(pos.x, pos.y, `${id}${index}`, imagePath));
+    index++;
+  }
+};
 
 // pop up div for players selection
 
@@ -154,16 +191,37 @@ document.addEventListener("DOMContentLoaded", () => {
     if (playersCount >= 2) {
       document.body.removeChild(popUpDiv);
       if (userChoice.includes("red-player")) {
-        for (let index = 0; index < 4; index++) {
-          redPlayers.push(
-            new Players(
-              (150 / 2) * index,
-              (150 / 2) * index,
-              `red-player${index}`,
-              "assets/images/red_ludo_token0.png"
-            )
-          );
-        }
+        createPlayers(
+          PLAYERS_INITIAL_POSITIONS[0],
+          redPlayers,
+          "red-player",
+          "assets/images/red_ludo_token0.png"
+        );
+        console.log(redPlayers);
+      }
+      if (userChoice.includes("green-player")) {
+        createPlayers(
+          PLAYERS_INITIAL_POSITIONS[1],
+          greenPlayers,
+          "green-player",
+          "assets/images/green_ludo_token0.png"
+        );
+      }
+      if (userChoice.includes("yellow-player")) {
+        createPlayers(
+          PLAYERS_INITIAL_POSITIONS[2],
+          yellowPlayers,
+          "yellow-player",
+          "assets/images/yellow_ludo_token0.png"
+        );
+      }
+      if (userChoice.includes("blue-player")) {
+        createPlayers(
+          PLAYERS_INITIAL_POSITIONS[3],
+          bluePlayers,
+          "blue-player",
+          "assets/images/blue_ludo_token0.png"
+        );
       }
     } else {
       alert("Please select two players at least!");
@@ -512,6 +570,9 @@ const drawGame = () => {
   drawHorizontalBorders();
   drawVerticalBorders();
   drawPlayers(redPlayers);
+  drawPlayers(greenPlayers);
+  drawPlayers(yellowPlayers);
+  drawPlayers(bluePlayers);
   requestAnimationFrame(drawGame);
 };
 
