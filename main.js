@@ -5,6 +5,10 @@ const canvas = document.getElementById("playground");
 /** @type {CanvasRenderingContext2D} */
 const ctx = canvas.getContext("2d");
 const output = document.getElementById("output");
+const visualOutput = document.querySelectorAll(".visual-output");
+const DICE_SOUND_EFFECT = new Audio(
+  "assets/sound effects/dice_sound_effect.mp3"
+);
 
 canvas.width = 750;
 canvas.height = 750;
@@ -24,10 +28,90 @@ const rectHeight = 300;
 const rectWidth2 = BLOCK_SIZE;
 const rectHeight2 = BLOCK_SIZE;
 
-const visualOutput = document.querySelectorAll(".visual-output");
-const DICE_SOUND_EFFECT = new Audio(
-  "assets/sound effects/dice_sound_effect.mp3"
-);
+const positions = [
+  [
+    { x: 0, y: 0 },
+    { x: 0, y: 250 },
+    { x: 0, y: 0 },
+    { x: 250, y: 0 },
+  ],
+  [
+    { x: 450, y: 0 },
+    { x: 450, y: 250 },
+    { x: 450, y: 0 },
+    { x: 700, y: 0 },
+  ],
+  [
+    { x: 450, y: 450 },
+    { x: 450, y: 700 },
+    { x: 450, y: 450 },
+    { x: 700, y: 450 },
+  ],
+  [
+    { x: 0, y: 450 },
+    { x: 0, y: 700 },
+    { x: 0, y: 450 },
+    { x: 250, y: 450 },
+  ],
+  [{ x: 50, y: 350 }],
+  [{ x: 350, y: 50 }],
+  [{ x: 400, y: 350 }],
+  [{ x: 350, y: 400 }],
+  [{ x: 300, y: 350 }],
+  [{ x: 300, y: 300 }],
+  [{ x: 400, y: 300 }],
+  [{ x: 350, y: 400 }],
+  [{ x: 50, y: 300 }],
+  [{ x: 400, y: 50 }],
+  [{ x: 650, y: 400 }],
+  [{ x: 300, y: 650 }],
+];
+
+const drawBases = (
+  standard,
+  index,
+  color,
+  width = BLOCK_SIZE,
+  height = BLOCK_SIZE
+) => {
+  if (standard) {
+    for (let i = 0; i < positions[index].length; i++) {
+      switch (i) {
+        case 0:
+        case 1:
+          ctx.beginPath();
+          ctx.fillStyle = color;
+          ctx.fillRect(
+            positions[index][i].x,
+            positions[index][i].y,
+            rectWidth,
+            rectHeight2
+          );
+          ctx.closePath();
+          break;
+        case 2:
+        case 3:
+          ctx.beginPath();
+          ctx.fillStyle = color;
+          ctx.fillRect(
+            positions[index][i].x,
+            positions[index][i].y,
+            rectWidth2,
+            rectHeight
+          );
+          ctx.closePath();
+          break;
+      }
+    }
+  } else {
+    for (let i = 0; i < positions[index].length; i++) {
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.fillRect(positions[index][i].x, positions[index][i].y, width, height);
+      ctx.closePath();
+    }
+  }
+};
 
 const drawHorizontalBorders = () => {
   for (let index = 0; index < horizontalBordersAmount; index++) {
@@ -48,6 +132,8 @@ const drawVerticalBorders = () => {
     ctx.closePath();
   }
 };
+
+// Initializing the players
 
 class Players {
   constructor(x, y, id, imagSrc) {
@@ -71,9 +157,6 @@ class Players {
   }
 }
 
-// Initializing the players
-
-let playersCount = 0;
 const redPlayers = [];
 const greenPlayers = [];
 const yellowPlayers = [];
@@ -106,11 +189,11 @@ const PLAYERS_INITIAL_POSITIONS = [
   ],
 ];
 
-// function for creating the players objects
+// function for creating the players objects and will be pushed into the playersArray
 
-const createPlayers = (array, playersArray, id, imagePath) => {
+const createPlayers = (arrayOfPositions, playersArray, id, imagePath) => {
   let index = 0;
-  for (pos of array) {
+  for (pos of arrayOfPositions) {
     playersArray.push(new Players(pos.x, pos.y, `${id}${index}`, imagePath));
     index++;
   }
@@ -148,9 +231,10 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     `;
   document.body.appendChild(popUpDiv);
+  let userChoice = [];
+  let playersCount = 0;
   const startButton = document.querySelector(".start-button");
   const checkboxes = document.querySelectorAll(".checkbox");
-  let userChoice = [];
 
   // loop for attaching an event listener on the checkboxes
   // the event listener will be called when the checkboxes are clicked
@@ -436,91 +520,6 @@ const handleLines = (line) => {
         player.y -= rollResult;
       }
       break;
-  }
-};
-
-const positions = [
-  [
-    { x: 0, y: 0 },
-    { x: 0, y: 250 },
-    { x: 0, y: 0 },
-    { x: 250, y: 0 },
-  ],
-  [
-    { x: 450, y: 0 },
-    { x: 450, y: 250 },
-    { x: 450, y: 0 },
-    { x: 700, y: 0 },
-  ],
-  [
-    { x: 450, y: 450 },
-    { x: 450, y: 700 },
-    { x: 450, y: 450 },
-    { x: 700, y: 450 },
-  ],
-  [
-    { x: 0, y: 450 },
-    { x: 0, y: 700 },
-    { x: 0, y: 450 },
-    { x: 250, y: 450 },
-  ],
-  [{ x: 50, y: 350 }],
-  [{ x: 350, y: 50 }],
-  [{ x: 400, y: 350 }],
-  [{ x: 350, y: 400 }],
-  [{ x: 300, y: 350 }],
-  [{ x: 300, y: 300 }],
-  [{ x: 400, y: 300 }],
-  [{ x: 350, y: 400 }],
-  [{ x: 50, y: 300 }],
-  [{ x: 400, y: 50 }],
-  [{ x: 650, y: 400 }],
-  [{ x: 300, y: 650 }],
-];
-
-const drawBases = (
-  standard,
-  index,
-  color,
-  width = BLOCK_SIZE,
-  height = BLOCK_SIZE
-) => {
-  if (standard) {
-    for (let i = 0; i < positions[index].length; i++) {
-      switch (i) {
-        case 0:
-        case 1:
-          ctx.beginPath();
-          ctx.fillStyle = color;
-          ctx.fillRect(
-            positions[index][i].x,
-            positions[index][i].y,
-            rectWidth,
-            rectHeight2
-          );
-          ctx.closePath();
-          break;
-        case 2:
-        case 3:
-          ctx.beginPath();
-          ctx.fillStyle = color;
-          ctx.fillRect(
-            positions[index][i].x,
-            positions[index][i].y,
-            rectWidth2,
-            rectHeight
-          );
-          ctx.closePath();
-          break;
-      }
-    }
-  } else {
-    for (let i = 0; i < positions[index].length; i++) {
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.fillRect(positions[index][i].x, positions[index][i].y, width, height);
-      ctx.closePath();
-    }
   }
 };
 
