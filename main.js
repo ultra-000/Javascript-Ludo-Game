@@ -189,12 +189,74 @@ const PLAYERS_INITIAL_POSITIONS = [
   ],
 ];
 
+// TODO: complete selection mechanism
+
+let firstTime = true;
+const allPlayers = [];
+
+const select = () => {
+  if (firstTime) {
+    if (userChoice.includes("red-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: redPlayers,
+      });
+    }
+    if (userChoice.includes("green-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: greenPlayers,
+      });
+    }
+    if (userChoice.includes("yellow-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: yellowPlayers,
+      });
+    }
+    if (userChoice.includes("blue-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: bluePlayers,
+      });
+    }
+    let index = Math.floor(Math.random() * userChoice.length);
+    allPlayers[index].selected = true;
+    for (let i = 1; i < 5; i++) {
+      document.addEventListener("keypress", function (e) {
+        if (e.key === String(i) && allPlayers[index].selected) {
+          if (allPlayers[index].arrayOfPlayers === redPlayers) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 50;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 300;
+            allPlayers[index].selected = false;
+          } else if (allPlayers[index].arrayOfPlayers === greenPlayers) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 400;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 50;
+            allPlayers[index].selected = false;
+          } else if (allPlayers[index].arrayOfPlayers === yellowPlayers) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 650;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 400;
+            allPlayers[index].selected = false;
+          } else if (allPlayers[index].arrayOfPlayers === bluePlayers) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 300;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 650;
+            allPlayers[index].selected = false;
+          }
+        }
+      });
+    }
+    firstTime = false;
+  }
+};
+
 // function for creating the players objects and will be pushed into the playersArray
 
 const createPlayers = (arrayOfPositions, playersArray, id, imagePath) => {
   let index = 0;
   for (pos of arrayOfPositions) {
-    playersArray.push(new Players(pos.x, pos.y, `${id}${index}`, imagePath));
+    playersArray.push(
+      new Players(pos.x, pos.y, `${id}${index}`, `${imagePath}${index}.png`)
+    );
     index++;
   }
 };
@@ -279,7 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
           PLAYERS_INITIAL_POSITIONS[0],
           redPlayers,
           "red-player",
-          "assets/images/red_ludo_token0.png"
+          "assets/images/red_ludo_token"
         );
       }
       if (userChoice.includes("green-player")) {
@@ -287,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
           PLAYERS_INITIAL_POSITIONS[1],
           greenPlayers,
           "green-player",
-          "assets/images/green_ludo_token0.png"
+          "assets/images/green_ludo_token"
         );
       }
       if (userChoice.includes("yellow-player")) {
@@ -295,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
           PLAYERS_INITIAL_POSITIONS[2],
           yellowPlayers,
           "yellow-player",
-          "assets/images/yellow_ludo_token0.png"
+          "assets/images/yellow_ludo_token"
         );
       }
       if (userChoice.includes("blue-player")) {
@@ -303,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
           PLAYERS_INITIAL_POSITIONS[3],
           bluePlayers,
           "blue-player",
-          "assets/images/blue_ludo_token0.png"
+          "assets/images/blue_ludo_token"
         );
       }
       select();
@@ -351,7 +413,7 @@ const diceface = (value) => {
 
 // position detection
 
-const detectLocation = () => {
+const detectLocation = (player) => {
   if (player.x >= 0 && player.x <= 300 && player.y === 300) return "line0";
   if (player.x === 300 && player.y <= 250 && player.y >= 0) return "line1";
   if (player.y === 0 && player.x >= 300 && player.x <= 400) return "line2";
@@ -368,7 +430,7 @@ const detectLocation = () => {
 
 // handle the player movement based on their position and the dice result
 
-const handleLines = (line) => {
+const handleLines = (line, player) => {
   switch (line) {
     case "line0":
       xPossibleMoves = 300;
@@ -523,7 +585,7 @@ const handleLines = (line) => {
   }
 };
 
-const rollDice = () => {
+const rollDice = (player) => {
   DICE_SOUND_EFFECT.play();
   rollResult = Math.ceil(Math.random() * 6);
   rollResult *= 50;
@@ -536,75 +598,15 @@ const rollDice = () => {
   setTimeout(() => {
     clearInterval(intervalId);
     diceface(rollResult / BLOCK_SIZE);
-    handleLines(detectLocation());
+    handleLines(detectLocation(player), player);
   }, 500);
 };
 
 document.addEventListener("keypress", (e) => {
   if (e.key === "Enter") {
-    rollDice();
+    rollDice(redPlayers[0]);
   }
 });
-
-// TODO: complete selection mechanism
-
-let firstTime = true;
-const allPlayers = [];
-
-const select = () => {
-  if (firstTime) {
-    if (userChoice.includes("red-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: redPlayers,
-      });
-    }
-    if (userChoice.includes("green-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: greenPlayers,
-      });
-    }
-    if (userChoice.includes("yellow-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: yellowPlayers,
-      });
-    }
-    if (userChoice.includes("blue-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: bluePlayers,
-      });
-    }
-    let index = Math.floor(Math.random() * userChoice.length);
-    allPlayers[index].selected = true;
-    for (let i = 1; i < 5; i++) {
-      document.addEventListener("keypress", function (e) {
-        if (e.key === String(i) && allPlayers[index].selected) {
-          if (allPlayers[index].arrayOfPlayers === redPlayers) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 50;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 300;
-            allPlayers[index].selected = false;
-          } else if (allPlayers[index].arrayOfPlayers === greenPlayers) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 400;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 50;
-            allPlayers[index].selected = false;
-          } else if (allPlayers[index].arrayOfPlayers === yellowPlayers) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 650;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 400;
-            allPlayers[index].selected = false;
-          } else if (allPlayers[index].arrayOfPlayers === bluePlayers) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 300;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 650;
-            allPlayers[index].selected = false;
-          }
-        }
-      });
-    }
-    firstTime = false;
-  }
-};
 
 // define the game loop function
 
