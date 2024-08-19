@@ -201,6 +201,7 @@ const createPlayers = (arrayOfPositions, playersArray, id, imagePath) => {
 
 // pop up div for players selection
 
+const userChoice = [];
 const popUpDiv = document.createElement("div");
 document.addEventListener("DOMContentLoaded", () => {
   popUpDiv.classList.add("popup");
@@ -231,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     `;
   document.body.appendChild(popUpDiv);
-  let userChoice = [];
   let playersCount = 0;
   const startButton = document.querySelector(".start-button");
   const checkboxes = document.querySelectorAll(".checkbox");
@@ -306,6 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "assets/images/blue_ludo_token0.png"
         );
       }
+      select();
     } else {
       alert("Please select two players at least!");
     }
@@ -548,39 +549,58 @@ document.addEventListener("keypress", (e) => {
 // TODO: complete selection mechanism
 
 let firstTime = true;
-const allPlayers = [
-  {
-    selected: false,
-    arrayOfPlayers: redPlayers,
-  },
-  {
-    selected: false,
-    arrayOfPlayers: greenPlayers,
-  },
-  {
-    selected: false,
-    arrayOfPlayers: yellowPlayers,
-  },
-  {
-    selected: false,
-    arrayOfPlayers: bluePlayers,
-  },
-];
+const allPlayers = [];
 
 const select = () => {
   if (firstTime) {
-    let index = Math.ceil(Math.random() * 3);
+    if (userChoice.includes("red-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: redPlayers,
+      });
+    }
+    if (userChoice.includes("green-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: greenPlayers,
+      });
+    }
+    if (userChoice.includes("yellow-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: yellowPlayers,
+      });
+    }
+    if (userChoice.includes("blue-player")) {
+      allPlayers.push({
+        selected: false,
+        arrayOfPlayers: bluePlayers,
+      });
+    }
+    let index = Math.floor(Math.random() * userChoice.length);
     allPlayers[index].selected = true;
-    if (allPlayers[index].selected) {
-      for (let i = 1; i < 5; i++) {
-        window.addEventListener("keypress", function (e) {
-          if (e.key === String(i) && allPlayers[index].selected) {
+    for (let i = 1; i < 5; i++) {
+      document.addEventListener("keypress", function (e) {
+        if (e.key === String(i) && allPlayers[index].selected) {
+          if (allPlayers[index].arrayOfPlayers === redPlayers) {
             allPlayers[index].arrayOfPlayers[i - 1].x = 50;
             allPlayers[index].arrayOfPlayers[i - 1].y = 300;
             allPlayers[index].selected = false;
+          } else if (allPlayers[index].arrayOfPlayers === greenPlayers) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 400;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 50;
+            allPlayers[index].selected = false;
+          } else if (allPlayers[index].arrayOfPlayers === yellowPlayers) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 650;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 400;
+            allPlayers[index].selected = false;
+          } else if (allPlayers[index].arrayOfPlayers === bluePlayers) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 300;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 650;
+            allPlayers[index].selected = false;
           }
-        });
-      }
+        }
+      });
     }
     firstTime = false;
   }
@@ -612,10 +632,6 @@ const drawGame = () => {
   drawPlayers(greenPlayers);
   drawPlayers(yellowPlayers);
   drawPlayers(bluePlayers);
-  setTimeout(() => {
-    select();
-    console.log("Your up!");
-  }, 8000);
   requestAnimationFrame(drawGame);
 };
 // start the game loop
