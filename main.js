@@ -281,7 +281,6 @@ document.addEventListener("DOMContentLoaded", () => {
           "red-player",
           "assets/images/red_ludo_token0.png"
         );
-        console.log(redPlayers);
       }
       if (userChoice.includes("green-player")) {
         createPlayers(
@@ -546,6 +545,47 @@ document.addEventListener("keypress", (e) => {
   }
 });
 
+// TODO: complete selection mechanism
+
+let firstTime = true;
+const allPlayers = [
+  {
+    selected: false,
+    arrayOfPlayers: redPlayers,
+  },
+  {
+    selected: false,
+    arrayOfPlayers: greenPlayers,
+  },
+  {
+    selected: false,
+    arrayOfPlayers: yellowPlayers,
+  },
+  {
+    selected: false,
+    arrayOfPlayers: bluePlayers,
+  },
+];
+
+const select = () => {
+  if (firstTime) {
+    let index = Math.ceil(Math.random() * 3);
+    allPlayers[index].selected = true;
+    if (allPlayers[index].selected) {
+      for (let i = 1; i < 5; i++) {
+        window.addEventListener("keypress", function (e) {
+          if (e.key === String(i) && allPlayers[index].selected) {
+            allPlayers[index].arrayOfPlayers[i - 1].x = 50;
+            allPlayers[index].arrayOfPlayers[i - 1].y = 300;
+            allPlayers[index].selected = false;
+          }
+        });
+      }
+    }
+    firstTime = false;
+  }
+};
+
 // define the game loop function
 
 const drawGame = () => {
@@ -572,9 +612,12 @@ const drawGame = () => {
   drawPlayers(greenPlayers);
   drawPlayers(yellowPlayers);
   drawPlayers(bluePlayers);
+  setTimeout(() => {
+    select();
+    console.log("Your up!");
+  }, 8000);
   requestAnimationFrame(drawGame);
 };
-
 // start the game loop
 
 drawGame();
