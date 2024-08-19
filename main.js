@@ -194,7 +194,7 @@ const PLAYERS_INITIAL_POSITIONS = [
 let firstTime = true;
 const allPlayers = [];
 
-const select = () => {
+const select = (callback) => {
   if (firstTime) {
     if (userChoice.includes("red-player")) {
       allPlayers.push({
@@ -220,24 +220,36 @@ const select = () => {
         arrayOfPlayers: bluePlayers,
       });
     }
+    // TODO: callback is broken
+    callback(pl);
+    let six = 300;
     let index = Math.floor(Math.random() * userChoice.length);
     allPlayers[index].selected = true;
     for (let i = 1; i < 5; i++) {
       document.addEventListener("keypress", function (e) {
         if (e.key === String(i) && allPlayers[index].selected) {
-          if (allPlayers[index].arrayOfPlayers === redPlayers) {
+          if (allPlayers[index].arrayOfPlayers === redPlayers && six >= 300) {
             allPlayers[index].arrayOfPlayers[i - 1].x = 50;
             allPlayers[index].arrayOfPlayers[i - 1].y = 300;
             allPlayers[index].selected = false;
-          } else if (allPlayers[index].arrayOfPlayers === greenPlayers) {
+          } else if (
+            allPlayers[index].arrayOfPlayers === greenPlayers &&
+            six >= 300
+          ) {
             allPlayers[index].arrayOfPlayers[i - 1].x = 400;
             allPlayers[index].arrayOfPlayers[i - 1].y = 50;
             allPlayers[index].selected = false;
-          } else if (allPlayers[index].arrayOfPlayers === yellowPlayers) {
+          } else if (
+            allPlayers[index].arrayOfPlayers === yellowPlayers &&
+            six >= 300
+          ) {
             allPlayers[index].arrayOfPlayers[i - 1].x = 650;
             allPlayers[index].arrayOfPlayers[i - 1].y = 400;
             allPlayers[index].selected = false;
-          } else if (allPlayers[index].arrayOfPlayers === bluePlayers) {
+          } else if (
+            allPlayers[index].arrayOfPlayers === bluePlayers &&
+            six >= 300
+          ) {
             allPlayers[index].arrayOfPlayers[i - 1].x = 300;
             allPlayers[index].arrayOfPlayers[i - 1].y = 650;
             allPlayers[index].selected = false;
@@ -368,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "assets/images/blue_ludo_token"
         );
       }
-      select();
+      select(rollDice(redPlayers[0]));
     } else {
       alert("Please select two players at least!");
     }
