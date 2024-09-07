@@ -1,0 +1,137 @@
+player.totalMoves += rollResult;
+  console.log(player.totalMoves);
+  let intervalId = setInterval(() => {
+    diceface(Math.ceil(Math.random() * 6), 3);
+  }, 100);
+
+  setTimeout(() => {
+    clearInterval(intervalId);
+    diceface(rollResult / BLOCK_SIZE, 3);
+    handleLines(detectLocation(player), player);
+  }, 500);
+
+  // another important logic
+
+  else
+          {
+            turnSkipPreventer = 0;
+            for(let index = 0; index < 4; index++)
+            {
+              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
+              {
+                turnSkipPreventer++;
+              }
+            }
+            if(turnSkipPreventer >= 4)
+            {
+              canRollDice = true;
+            }
+            else
+            {
+              canRollDice = false;
+            }
+          }
+
+// more logic
+
+for(let index = 0; index < 4; index++)
+      {
+        if(allPlayers[selector].arrayOfPlayers[index].totalMoves >= 2500)
+        {
+          if(allPlayers[selector].arrayOfPlayers === redPlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "red";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+          else if(allPlayers[selector].arrayOfPlayers === greenPlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "limegreen";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+          else if(allPlayers[selector].arrayOfPlayers === yellowPlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "yellow";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+          else if(allPlayers[selector].arrayOfPlayers === bluePlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "#00BFFF";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+        }
+      }
+
+// very very very important logic!!!!
+
+const stepOver = (player) =>
+{
+  for(let i = 0; i < allPlayers.length; i++)
+  {
+    for(let j = 0; j < 4; j++)
+    {
+      const stepedOverPlayer = allPlayers[i].arrayOfPlayers[j];
+      if(player.x === stepedOverPlayer.x && player.y === stepedOverPlayer.y && player.team !== stepedOverPlayer.team)
+      {
+        switch(stepedOverPlayer.team)
+        {
+          case "red":
+            stepedOverPlayer.inBase = true;
+            stepedOverPlayer.totalMoves = 0;
+            stepedOverPlayer.x = PLAYERS_INITIAL_POSITIONS[0][j].x;
+            stepedOverPlayer.y = PLAYERS_INITIAL_POSITIONS[0][j].y;
+            return;
+          case "green":
+            stepedOverPlayer.inBase = true;
+            stepedOverPlayer.totalMoves = 0;
+            stepedOverPlayer.x = PLAYERS_INITIAL_POSITIONS[1][j].x;
+            stepedOverPlayer.y = PLAYERS_INITIAL_POSITIONS[1][j].y;
+            return;
+          case "yellow":
+            stepedOverPlayer.inBase = true;
+            stepedOverPlayer.totalMoves = 0;
+            stepedOverPlayer.x = PLAYERS_INITIAL_POSITIONS[2][j].x;
+            stepedOverPlayer.y = PLAYERS_INITIAL_POSITIONS[2][j].y;
+            return;
+          case "blue":
+            stepedOverPlayer.inBase = true;
+            stepedOverPlayer.totalMoves = 0;
+            stepedOverPlayer.x = PLAYERS_INITIAL_POSITIONS[3][j].x;
+            stepedOverPlayer.y = PLAYERS_INITIAL_POSITIONS[3][j].y;
+            return;
+        }
+      }
+    }
+  }
+}

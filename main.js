@@ -1,3 +1,9 @@
+// TODO: implement winning logic
+// TODO: make safe areas
+// TODO: if rollResult is more than 300 or equal to it the player gets another turn
+// TODO: try and make players that stand in the same place not drawn above each other
+// TODO: make animations (maybe) :/
+
 // Initializing the game
 
 /** @type {HTMLCanvasElement} */
@@ -10,6 +16,7 @@ const DICE_SOUND_EFFECT = new Audio(
   "assets/sound effects/dice_sound_effect.mp3"
 );
 
+const htmlTag = document.querySelector("html");
 canvas.width = 750;
 canvas.height = 750;
 
@@ -136,7 +143,7 @@ const drawVerticalBorders = () => {
 // Initializing the players
 
 class Players {
-  constructor(x, y, id, imagSrc) {
+  constructor(x, y, id, team, imagSrc) {
     this.x = x;
     this.y = y;
     this.width = BLOCK_SIZE;
@@ -144,6 +151,7 @@ class Players {
     this.image = new Image();
     this.image.src = imagSrc;
     this.id = id;
+    this.team = team;
     this.totalMoves = 0;
     this.isTurn = false;
     this.inBase = true;
@@ -189,91 +197,268 @@ const PLAYERS_INITIAL_POSITIONS = [
   ],
 ];
 
-// TODO: complete selection mechanism
-
-let firstTime = true;
+let canRollDice = false;
+let selectInstance;
 const allPlayers = [];
 
-const select = (callback) => {
-  if (firstTime) {
-    if (userChoice.includes("red-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: redPlayers,
-      });
+function animatePlayerMovement(player, newX, newY, onComplete) {
+  gsap.to(player, {
+    x: newX,
+    y: newY,
+    duration: 1, // Adjust duration for smoother or faster animations
+    ease: "power1.inOut",
+    onUpdate: function() {
+      drawGame(); // Continuously redraw the game as the player moves
+    },
+    onComplete: onComplete // Callback when the animation completes
+  });
+}
+
+function stepOver(player) {
+  for (let i = 0; i < allPlayers.length; i++) {
+    for (let j = 0; j < 4; j++) {
+      const steppedOverPlayer = allPlayers[i].arrayOfPlayers[j];
+      
+      if (player.x === steppedOverPlayer.x && player.y === steppedOverPlayer.y && player.team !== steppedOverPlayer.team) {
+        let initialPosition;
+
+        // Match the steppedOverPlayer's team with the correct initial position
+        switch (steppedOverPlayer.team) {
+          case "red":
+            initialPosition = PLAYERS_INITIAL_POSITIONS[0][j];
+            break;
+          case "green":
+            initialPosition = PLAYERS_INITIAL_POSITIONS[1][j];
+            break;
+          case "yellow":
+            initialPosition = PLAYERS_INITIAL_POSITIONS[2][j];
+            break;
+          case "blue":
+            initialPosition = PLAYERS_INITIAL_POSITIONS[3][j];
+            break;
+          default:
+            console.error("Unknown team:", steppedOverPlayer.team);
+            return;
+        }
+
+        // Animate the player back to their initial position
+        animatePlayerMovement(steppedOverPlayer, initialPosition.x, initialPosition.y, function() {
+          steppedOverPlayer.inBase = true;
+          steppedOverPlayer.totalMoves = 0;
+        });
+
+        return;
+      }
     }
-    if (userChoice.includes("green-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: greenPlayers,
-      });
+  }
+}
+
+const turnSkipperFunction = (selector) =>
+{
+  let turnSkipper = 0;
+  for(let index = 0; index < 4; index++)
+  {
+    if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
+    {
+      turnSkipper++;
     }
-    if (userChoice.includes("yellow-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: yellowPlayers,
-      });
-    }
-    if (userChoice.includes("blue-player")) {
-      allPlayers.push({
-        selected: false,
-        arrayOfPlayers: bluePlayers,
-      });
-    }
-    // TODO: callback is broken
-    callback(pl);
-    let six = 300;
-    let index = Math.floor(Math.random() * userChoice.length);
-    allPlayers[index].selected = true;
-    for (let i = 1; i < 5; i++) {
-      document.addEventListener("keypress", function (e) {
-        if (e.key === String(i) && allPlayers[index].selected) {
-          if (allPlayers[index].arrayOfPlayers === redPlayers && six >= 300) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 50;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 300;
-            allPlayers[index].selected = false;
-          } else if (
-            allPlayers[index].arrayOfPlayers === greenPlayers &&
-            six >= 300
-          ) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 400;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 50;
-            allPlayers[index].selected = false;
-          } else if (
-            allPlayers[index].arrayOfPlayers === yellowPlayers &&
-            six >= 300
-          ) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 650;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 400;
-            allPlayers[index].selected = false;
-          } else if (
-            allPlayers[index].arrayOfPlayers === bluePlayers &&
-            six >= 300
-          ) {
-            allPlayers[index].arrayOfPlayers[i - 1].x = 300;
-            allPlayers[index].arrayOfPlayers[i - 1].y = 650;
-            allPlayers[index].selected = false;
+  }
+  if(turnSkipper >= 4)
+  {
+    canRollDice = true;
+  }
+  else
+  {
+    canRollDice = false;
+  }
+}
+
+const select = () => {
+  let firstTime = true;
+  let turnSkipPreventer = 0;
+  let selector = Math.floor(Math.random() * allPlayers.length);
+  for(let index = 1; index < 5; index++)
+  {
+    document.addEventListener("keypress", function(event)
+    {
+      if(event.key === String(index))
+      {
+        if(allPlayers[selector].arrayOfPlayers === redPlayers)
+        {
+          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          {
+            allPlayers[selector].arrayOfPlayers[index - 1].x = 50;
+            allPlayers[selector].arrayOfPlayers[index - 1].y = 300;
+            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          {
+            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
+            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else
+          {
+            turnSkipPreventer = 0;
+            for(let index = 0; index < 4; index++)
+            {
+              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
+              {
+                turnSkipPreventer++;
+              }
+            }
+            if(turnSkipPreventer >= 4)
+            {
+              canRollDice = true;
+            }
           }
         }
-      });
+        else if(allPlayers[selector].arrayOfPlayers === greenPlayers)
+        {
+          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          {
+            allPlayers[selector].arrayOfPlayers[index - 1].x = 400;
+            allPlayers[selector].arrayOfPlayers[index - 1].y = 50;
+            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          {
+            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
+            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else
+          {
+            turnSkipPreventer = 0;
+            for(let index = 0; index < 4; index++)
+            {
+              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
+              {
+                turnSkipPreventer++;
+              }
+            }
+            if(turnSkipPreventer >= 4)
+            {
+              canRollDice = true;
+            }
+          }
+        }
+        else if(allPlayers[selector].arrayOfPlayers === yellowPlayers)
+        {
+          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          {
+            allPlayers[selector].arrayOfPlayers[index - 1].x = 650;
+            allPlayers[selector].arrayOfPlayers[index - 1].y = 400;
+            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          {
+            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
+            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else
+          {
+            turnSkipPreventer = 0;
+            for(let index = 0; index < 4; index++)
+            {
+              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
+              {
+                turnSkipPreventer++;
+              }
+            }
+            if(turnSkipPreventer >= 4)
+            {
+              canRollDice = true;
+            }
+          }
+        }
+        else if(allPlayers[selector].arrayOfPlayers === bluePlayers)
+        {
+          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          {
+            allPlayers[selector].arrayOfPlayers[index - 1].x = 300;
+            allPlayers[selector].arrayOfPlayers[index - 1].y = 650;
+            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          {
+            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
+            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
+            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            firstTime = false;
+            canRollDice = true;
+          }
+          else
+          {
+            turnSkipPreventer = 0;
+            for(let index = 0; index < 4; index++)
+            {
+              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
+              {
+                turnSkipPreventer++;
+              }
+            }
+            if(turnSkipPreventer >= 4)
+            {
+              canRollDice = true;
+            }
+          }
+        }
+      }
+    })
+  }
+  return function()
+  {
+    selector++;
+    firstTime = true;
+    if(selector > allPlayers.length - 1)
+    {
+      selector = 0;
     }
-    firstTime = false;
+    turnSkipperFunction(selector);
+    let intervalId = setInterval(() => {
+      diceface(Math.ceil(Math.random() * 6), handleVisualOutput(selector));
+    }, 100);
+  
+    setTimeout(() => {
+      clearInterval(intervalId);
+      diceface(rollResult / BLOCK_SIZE, handleVisualOutput(selector));
+    }, 1000);
   }
 };
 
 // function for creating the players objects and will be pushed into the playersArray
 
-const createPlayers = (arrayOfPositions, playersArray, id, imagePath) => {
+const createPlayers = (arrayOfPositions, playersArray, id, team, imagePath) => {
   let index = 0;
   for (pos of arrayOfPositions) {
     playersArray.push(
-      new Players(pos.x, pos.y, `${id}${index}`, `${imagePath}${index}.png`)
+      new Players(pos.x, pos.y, `${id}${index}`, team, `${imagePath}${index}.png`)
     );
     index++;
   }
 };
 
-// pop up div for players selection
+// pop-up div for players selection
 
 const userChoice = [];
 const popUpDiv = document.createElement("div");
@@ -304,6 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="button-parent">
     <button class="start-button">Start</button>
     </div>
+    <p>Programmed by: Abd Elrahman Nour</p>
     `;
   document.body.appendChild(popUpDiv);
   let playersCount = 0;
@@ -336,15 +522,13 @@ document.addEventListener("DOMContentLoaded", () => {
           1
         );
       }
-      console.log(playersCount);
-      console.log(userChoice);
     });
   }
 
   startButton.addEventListener("click", () => {
     // if the players array contains more than two user choices
-    // we will remove the pop up div and initialize the players
-    // that the user has chosen otherwise we will abort the initialization
+    // the program will remove the pop-up div and initialize the players that
+    // the user has chosen otherwise it will abort the initialization
 
     if (playersCount >= 2) {
       document.body.removeChild(popUpDiv);
@@ -353,34 +537,55 @@ document.addEventListener("DOMContentLoaded", () => {
           PLAYERS_INITIAL_POSITIONS[0],
           redPlayers,
           "red-player",
+          "red",
           "assets/images/red_ludo_token"
         );
+        allPlayers.push({
+          selected: false,
+          arrayOfPlayers: redPlayers,
+        });
       }
       if (userChoice.includes("green-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[1],
           greenPlayers,
           "green-player",
+          "green",
           "assets/images/green_ludo_token"
         );
+        allPlayers.push({
+          selected: false,
+          arrayOfPlayers: greenPlayers,
+        });
       }
       if (userChoice.includes("yellow-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[2],
           yellowPlayers,
           "yellow-player",
+          "yellow",
           "assets/images/yellow_ludo_token"
         );
+        allPlayers.push({
+          selected: false,
+          arrayOfPlayers: yellowPlayers,
+        });
       }
       if (userChoice.includes("blue-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[3],
           bluePlayers,
           "blue-player",
+          "blue",
           "assets/images/blue_ludo_token"
         );
+        allPlayers.push({
+          selected: false,
+          arrayOfPlayers: bluePlayers,
+        });
       }
-      select(rollDice(redPlayers[0]));
+      selectInstance = select();
+      canRollDice = true;
     } else {
       alert("Please select two players at least!");
     }
@@ -395,30 +600,48 @@ const drawPlayers = (arrayOfPlayers) => {
   });
 };
 
-// main logic
-
-// a function that outputs the result of the rollDice() function
+// two functions that outputs the result of the rollDice() function
 // and plays a simple animation
 
-const diceface = (value) => {
+const handleVisualOutput = (selector) =>
+{
+  if(allPlayers[selector].arrayOfPlayers === redPlayers)
+  {
+    return 0;
+  }
+  else if(allPlayers[selector].arrayOfPlayers === greenPlayers)
+  {
+    return 2;
+  }
+  else if(allPlayers[selector].arrayOfPlayers === yellowPlayers)
+  {
+    return 3;
+  }
+  else if(allPlayers[selector].arrayOfPlayers === bluePlayers)
+  {
+    return 1;
+  }
+}
+
+const diceface = (value, index) => {
   switch (value) {
     case 1:
-      visualOutput[0].src = "assets/images/dice_face_one.png";
+      visualOutput[index].src = "assets/images/dice_face_one.png";
       break;
     case 2:
-      visualOutput[0].src = "assets/images/dice_face_two.png";
+      visualOutput[index].src = "assets/images/dice_face_two.png";
       break;
     case 3:
-      visualOutput[0].src = "assets/images/dice_face_three.png";
+      visualOutput[index].src = "assets/images/dice_face_three.png";
       break;
     case 4:
-      visualOutput[0].src = "assets/images/dice_face_four.png";
+      visualOutput[index].src = "assets/images/dice_face_four.png";
       break;
     case 5:
-      visualOutput[0].src = "assets/images/dice_face_five.png";
+      visualOutput[index].src = "assets/images/dice_face_five.png";
       break;
     case 6:
-      visualOutput[0].src = "assets/images/dice_face_six.png";
+      visualOutput[index].src = "assets/images/dice_face_six.png";
       break;
   }
 };
@@ -597,26 +820,16 @@ const handleLines = (line, player) => {
   }
 };
 
-const rollDice = (player) => {
+const rollDice = (callback) => {
   DICE_SOUND_EFFECT.play();
   rollResult = Math.ceil(Math.random() * 6);
   rollResult *= 50;
-  player.totalMoves += rollResult;
-  console.log(player.totalMoves);
-  let intervalId = setInterval(() => {
-    diceface(Math.ceil(Math.random() * 6));
-  }, 100);
-
-  setTimeout(() => {
-    clearInterval(intervalId);
-    diceface(rollResult / BLOCK_SIZE);
-    handleLines(detectLocation(player), player);
-  }, 500);
+  callback();
 };
 
 document.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    rollDice(redPlayers[0]);
+  if (e.key === "Enter" && canRollDice) {
+    rollDice(selectInstance);
   }
 });
 
@@ -646,8 +859,89 @@ const drawGame = () => {
   drawPlayers(greenPlayers);
   drawPlayers(yellowPlayers);
   drawPlayers(bluePlayers);
+  if(allPlayers.length > 0)
+  {
+    for(let i = 0; i < allPlayers.length; i++)
+    {
+      for(let j = 0; j < 4; j++)
+      {
+        if(allPlayers[i].arrayOfPlayers[j].totalMoves >= 2600)
+        {
+          if(allPlayers[i].arrayOfPlayers === redPlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "red";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+          else if(allPlayers[i].arrayOfPlayers === greenPlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "limegreen";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+          else if(allPlayers[i].arrayOfPlayers === yellowPlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "yellow";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+          else if(allPlayers[i].arrayOfPlayers === bluePlayers)
+          {
+            const anotherPopup = document.createElement("div");
+            anotherPopup.classList.add("won");
+            anotherPopup.style.color = "#00BFFF";
+            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
+            document.body.style.padding = "0px";
+            document.body.style.width = "100vw";
+            document.body.style.height = "100vh";
+            htmlTag.style.paddingTop = "0rem";
+            document.body.innerHTML = "";
+            document.body.append(anotherPopup);
+          }
+        }
+      }
+    }
+  }
   requestAnimationFrame(drawGame);
 };
 // start the game loop
 
 drawGame();
+
+// just a debugging function
+
+setInterval(function()
+{
+  if(allPlayers.length > 0)
+  {
+    for(let i = 0; i < allPlayers.length; i++)
+    {
+      for(let j = 0; j < 4; j++)
+      {
+        console.log(`${allPlayers[i].arrayOfPlayers[j].id}: ${allPlayers[i].arrayOfPlayers[j].totalMoves}`);
+      }
+    }
+  }
+  console.log("\n");
+}, 5000)

@@ -3,7 +3,7 @@ html {
   color: white;
   font-size: 16px;
   margin: 0rem;
-  padding: 5rem;
+  padding-top: 1rem;
   font-family: "Rubik";
 }
 
@@ -50,7 +50,11 @@ html {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  height: 750px;
+  height: 770px;
+}
+
+img {
+  color: black;
 }
 
 .popup {
@@ -159,4 +163,19 @@ html {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+}
+
+.won {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  left: 0px;
+  top: 0px;
+  background-color: rgb(55, 55, 55);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
 }
