@@ -141,6 +141,29 @@ const drawVerticalBorders = () => {
   }
 };
 
+const SAFE_AREAS_POSITIONS = [
+  { x: 50, y: 300 },
+  { x: 300, y: 100 },
+  { x: 400, y: 50 },
+  { x: 600, y: 300 },
+  { x: 650, y: 400 },
+  { x: 400, y: 600 },
+  { x: 300, y: 650 },
+  { x: 100, y: 400 },
+]
+
+function drawSafeAreas()
+{
+  for(const position of SAFE_AREAS_POSITIONS)
+  {
+    ctx.beginPath();
+    ctx.arc(position.x + 25, position.y + 25, 20, 0, Math.PI * 2);
+    ctx.strokeStyle = 'grey';
+    ctx.stroke();          
+    ctx.closePath();
+  }
+}
+
 // Initializing the players
 
 class Players {
@@ -219,8 +242,14 @@ function stepOver(player) {
   for (let i = 0; i < allPlayers.length; i++) {
     for (let j = 0; j < 4; j++) {
       const steppedOverPlayer = allPlayers[i].arrayOfPlayers[j];
-      
       if (player.x === steppedOverPlayer.x && player.y === steppedOverPlayer.y && player.team !== steppedOverPlayer.team) {
+        for(const position of SAFE_AREAS_POSITIONS)
+        {
+          if(steppedOverPlayer.x === position.x && steppedOverPlayer.y === position.y)
+          {
+            return;
+          }
+        }
         let initialPosition;
 
         // Match the steppedOverPlayer's team with the correct initial position
@@ -891,6 +920,7 @@ const drawGame = () => {
   drawPlayers(greenPlayers);
   drawPlayers(yellowPlayers);
   drawPlayers(bluePlayers);
+  drawSafeAreas();
   if(allPlayers.length > 0)
   {
     for(let i = 0; i < allPlayers.length; i++)
