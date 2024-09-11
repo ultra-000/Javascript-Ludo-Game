@@ -179,3 +179,27 @@ img {
   align-items: center;
   z-index: 2000;
 }
+
+.arabic {
+  text-align: right;
+}
+
+.ok-button {
+  margin: 0.5rem;
+  padding: 0.8rem;
+  background-color: #1a6eff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.do-not-show-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.do-not-show-checkbox {
+  margin-left: 5%;
+}

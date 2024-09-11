@@ -135,3 +135,8 @@ const stepOver = (player) =>
     }
   }
 }
+
+// here as well
+
+selectInstance = select();
+      canRollDice = true;

@@ -16,6 +16,7 @@ const DICE_SOUND_EFFECT = new Audio(
   "assets/sound effects/dice_sound_effect.mp3"
 );
 
+let doNotShow = false;
 const htmlTag = document.querySelector("html");
 canvas.width = 750;
 canvas.height = 750;
@@ -531,7 +532,40 @@ document.addEventListener("DOMContentLoaded", () => {
     // the user has chosen otherwise it will abort the initialization
 
     if (playersCount >= 2) {
-      document.body.removeChild(popUpDiv);
+      if(localStorage.getItem("don't-show-again") !== "true")
+      {
+        popUpDiv.innerHTML = `<h1>Instructions</h1>
+        <p>Instructions are simple all what you got to do is to press the "Enter" key on the keyboard and the dice will roll
+        and then choose one of the four players using one of the following numbers 1, 2, 3 or 4 they are also on the keyboard
+        </p>
+        <h1>Winning</h1>
+        <p>If you want to win you got to make one of the four players reach the base door or block, then a pop-up
+        will appear with the color of your team indicating your victory!</p>
+        <button class="ok-button">OK</button>
+        <div class="do-not-show-container">
+        <p>Don't show this instructions menu again?</p>
+        <input class="do-not-show-checkbox" type="checkbox">
+        </div>`;
+        const okButton = document.querySelector(".ok-button");
+        doNotShowCheckbox = document.querySelector(".do-not-show-checkbox");
+        okButton.addEventListener("click", function()
+        {
+          document.body.removeChild(popUpDiv);
+          selectInstance = select();
+          canRollDice = true;
+        })
+        doNotShowCheckbox.addEventListener("click", function()
+        {
+          doNotShow = doNotShow === false ? true : false;
+          localStorage.setItem("don't-show-again", String(doNotShow));
+        })
+      }
+      else
+      {
+        document.body.removeChild(popUpDiv);
+          selectInstance = select();
+          canRollDice = true;
+      }
       if (userChoice.includes("red-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[0],
@@ -584,8 +618,6 @@ document.addEventListener("DOMContentLoaded", () => {
           arrayOfPlayers: bluePlayers,
         });
       }
-      selectInstance = select();
-      canRollDice = true;
     } else {
       alert("Please select two players at least!");
     }
@@ -925,6 +957,7 @@ const drawGame = () => {
   }
   requestAnimationFrame(drawGame);
 };
+
 // start the game loop
 
 drawGame();
