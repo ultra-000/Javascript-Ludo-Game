@@ -140,33 +140,3 @@ const stepOver = (player) =>
 
 selectInstance = select();
       canRollDice = true;
-
-      // here another logic
-      let initialPosition;
-
-        // Match the steppedOverPlayer's team with the correct initial position
-        switch (steppedOverPlayer.team) {
-          case "red":
-            initialPosition = PLAYERS_INITIAL_POSITIONS[0][j];
-            break;
-          case "green":
-            initialPosition = PLAYERS_INITIAL_POSITIONS[1][j];
-            break;
-          case "yellow":
-            initialPosition = PLAYERS_INITIAL_POSITIONS[2][j];
-            break;
-          case "blue":
-            initialPosition = PLAYERS_INITIAL_POSITIONS[3][j];
-            break;
-          default:
-            console.error("Unknown team:", steppedOverPlayer.team);
-            return;
-        }
-
-        // Animate the player back to their initial position
-        animatePlayerMovement(steppedOverPlayer, initialPosition.x, initialPosition.y, function() {
-          steppedOverPlayer.inBase = true;
-          steppedOverPlayer.totalMoves = 0;
-        });
-
-        return;

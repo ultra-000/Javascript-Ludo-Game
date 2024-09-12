@@ -17,6 +17,7 @@ const DICE_SOUND_EFFECT = new Audio(
 );
 
 let doNotShow = false;
+let isKeyPressed = false;
 const htmlTag = document.querySelector("html");
 canvas.width = 750;
 canvas.height = 750;
@@ -309,7 +310,7 @@ const select = () => {
   let selector = Math.floor(Math.random() * allPlayers.length);
   for(let index = 1; index < 5; index++)
   {
-    document.addEventListener("keypress", function(event)
+    document.addEventListener("keydown", function(event)
     {
       if(event.key === String(index))
       {
@@ -888,11 +889,20 @@ const rollDice = (callback) => {
   callback();
 };
 
-document.addEventListener("keypress", (e) => {
-  if (e.key === "Enter" && canRollDice) {
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && canRollDice && !isKeyPressed) {
+    isKeyPressed = true;
     rollDice(selectInstance);
   }
 });
+
+document.addEventListener("keyup", function(event)
+{
+  if(event.key === "Enter")
+  {
+    isKeyPressed = false;
+  }
+})
 
 // define the game loop function
 
