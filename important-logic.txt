@@ -140,5 +140,3 @@ const stepOver = (player) =>
 
 selectInstance = select();
       canRollDice = true;
-
-      // <p class="arabic">ملاحظة: يا حاج اللعبة ما كاملة لسة لكن حا اكملها قريب اعتفد</p>
