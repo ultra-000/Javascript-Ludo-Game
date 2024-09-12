@@ -5,7 +5,6 @@
 // TODO: make animations (maybe) :/
 
 // Initializing the game
-
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById("playground");
 /** @type {CanvasRenderingContext2D} */
@@ -166,7 +165,6 @@ function drawSafeAreas()
 }
 
 // Initializing the players
-
 class Players {
   constructor(x, y, id, team, imagSrc) {
     this.x = x;
@@ -244,6 +242,8 @@ function stepOver(player) {
     for (let j = 0; j < 4; j++) {
       const steppedOverPlayer = allPlayers[i].arrayOfPlayers[j];
       if (player.x === steppedOverPlayer.x && player.y === steppedOverPlayer.y && player.team !== steppedOverPlayer.team) {
+
+        // make sure that the steppedOverPlayer isn't standing in a safe area
         for(const position of SAFE_AREAS_POSITIONS)
         {
           if(steppedOverPlayer.x === position.x && steppedOverPlayer.y === position.y)
@@ -251,6 +251,7 @@ function stepOver(player) {
             return;
           }
         }
+
         let initialPosition;
 
         // Match the steppedOverPlayer's team with the correct initial position
@@ -557,10 +558,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   startButton.addEventListener("click", () => {
+
     // if the players array contains more than two user choices
     // the program will remove the pop-up div and initialize the players that
     // the user has chosen otherwise it will abort the initialization
-
     if (playersCount >= 2) {
       if(localStorage.getItem("don't-show-again") !== "true")
       {
@@ -655,7 +656,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // players drawing function
-
 const drawPlayers = (arrayOfPlayers) => {
   arrayOfPlayers.forEach((player) => {
     player.draw();
@@ -664,7 +664,6 @@ const drawPlayers = (arrayOfPlayers) => {
 
 // two functions that outputs the result of the rollDice() function
 // and plays a simple animation
-
 const handleVisualOutput = (selector) =>
 {
   if(allPlayers[selector].arrayOfPlayers === redPlayers)
@@ -709,7 +708,6 @@ const diceface = (value, index) => {
 };
 
 // position detection
-
 const detectLocation = (player) => {
   if (player.x >= 0 && player.x <= 300 && player.y === 300) return "line0";
   if (player.x === 300 && player.y <= 250 && player.y >= 0) return "line1";
@@ -726,7 +724,6 @@ const detectLocation = (player) => {
 };
 
 // handle the player movement based on their position and the dice result
-
 const handleLines = (line, player) => {
   switch (line) {
     case "line0":
@@ -905,7 +902,6 @@ document.addEventListener("keyup", function(event)
 })
 
 // define the game loop function
-
 const drawGame = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBases(true, 0, "red");
@@ -999,11 +995,9 @@ const drawGame = () => {
 };
 
 // start the game loop
-
 drawGame();
 
 // just a debugging function
-
 setInterval(function()
 {
   if(allPlayers.length > 0)
