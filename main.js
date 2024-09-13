@@ -887,7 +887,8 @@ const rollDice = (callback) => {
 };
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && canRollDice && !isKeyPressed) {
+  if (event.key === "Enter" && canRollDice && !isKeyPressed)
+  {
     isKeyPressed = true;
     rollDice(selectInstance);
   }
@@ -1011,4 +1012,4 @@ setInterval(function()
     }
   }
   console.log("\n");
-}, 5000)
+}, 5000);
