@@ -1,5 +1,4 @@
 // TODO: implement winning logic
-// TODO: make safe areas
 // TODO: if rollResult is more than 300 or equal to it the player gets another turn
 // TODO: try and make players that stand in the same place not drawn above each other
 // TODO: make animations (maybe) :/
