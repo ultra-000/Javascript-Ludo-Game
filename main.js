@@ -16,13 +16,13 @@ const DICE_SOUND_EFFECT = new Audio(
 
 let doNotShow = false;
 let isKeyPressed = false;
-const htmlTag = document.querySelector("html");
 canvas.width = 750;
 canvas.height = 750;
 
 const BLOCK_SIZE = 50;
 let horizontalBordersAmount = canvas.width / 50;
 let verticalBordersAmount = canvas.height / 50;
+const htmlTag = document.querySelector("html");
 
 let xPossibleMoves;
 let yPossibleMoves;
@@ -149,7 +149,7 @@ const SAFE_AREAS_POSITIONS = [
   { x: 400, y: 600 },
   { x: 300, y: 650 },
   { x: 100, y: 400 },
-]
+];
 
 function drawSafeAreas()
 {
@@ -240,6 +240,7 @@ function stepOver(player) {
   for (let i = 0; i < allPlayers.length; i++) {
     for (let j = 0; j < 4; j++) {
       const steppedOverPlayer = allPlayers[i].arrayOfPlayers[j];
+
       if (player.x === steppedOverPlayer.x && player.y === steppedOverPlayer.y && player.team !== steppedOverPlayer.team) {
 
         // make sure that the steppedOverPlayer isn't standing in a safe area
@@ -273,11 +274,12 @@ function stepOver(player) {
         }
 
         // Animate the player back to their initial position
-        animatePlayerMovement(steppedOverPlayer, initialPosition.x, initialPosition.y, function() {
+        animatePlayerMovement(steppedOverPlayer, initialPosition.x, initialPosition.y, function()
+        {
           steppedOverPlayer.inBase = true;
           steppedOverPlayer.totalMoves = 0;
         });
-
+        
         return;
       }
     }
@@ -287,6 +289,7 @@ function stepOver(player) {
 const turnSkipperFunction = (selector) =>
 {
   let turnSkipper = 0;
+
   for(let index = 0; index < 4; index++)
   {
     if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
@@ -294,6 +297,7 @@ const turnSkipperFunction = (selector) =>
       turnSkipper++;
     }
   }
+
   if(turnSkipper >= 4)
   {
     canRollDice = true;
@@ -302,170 +306,121 @@ const turnSkipperFunction = (selector) =>
   {
     canRollDice = false;
   }
-}
+};
 
 const select = () => {
   let firstTime = true;
-  let turnSkipPreventer = 0;
   let selector = Math.floor(Math.random() * allPlayers.length);
+
   for(let index = 1; index < 5; index++)
   {
     document.addEventListener("keydown", function(event)
     {
       if(event.key === String(index))
       {
+        const player = allPlayers[selector].arrayOfPlayers[index - 1];
+
         if(allPlayers[selector].arrayOfPlayers === redPlayers)
         {
-          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          if(player.inBase && rollResult >= 300 && firstTime)
           {
-            allPlayers[selector].arrayOfPlayers[index - 1].x = 50;
-            allPlayers[selector].arrayOfPlayers[index - 1].y = 300;
-            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.x = 50;
+            player.y = 300;
+            player.inBase = false;
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
           }
-          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          else if(!player.inBase && firstTime)
           {
-            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
-            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.totalMoves += rollResult;
+            handleLines(detectLocation(player), player);
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
-          }
-          else
-          {
-            turnSkipPreventer = 0;
-            for(let index = 0; index < 4; index++)
-            {
-              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
-              {
-                turnSkipPreventer++;
-              }
-            }
-            if(turnSkipPreventer >= 4)
-            {
-              canRollDice = true;
-            }
           }
         }
         else if(allPlayers[selector].arrayOfPlayers === greenPlayers)
         {
-          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          if(player.inBase && rollResult >= 300 && firstTime)
           {
-            allPlayers[selector].arrayOfPlayers[index - 1].x = 400;
-            allPlayers[selector].arrayOfPlayers[index - 1].y = 50;
-            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.x = 400;
+            player.y = 50;
+            player.inBase = false;
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
           }
-          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          else if(!player.inBase && firstTime)
           {
-            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
-            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.totalMoves += rollResult;
+            handleLines(detectLocation(player), player);
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
-          }
-          else
-          {
-            turnSkipPreventer = 0;
-            for(let index = 0; index < 4; index++)
-            {
-              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
-              {
-                turnSkipPreventer++;
-              }
-            }
-            if(turnSkipPreventer >= 4)
-            {
-              canRollDice = true;
-            }
           }
         }
         else if(allPlayers[selector].arrayOfPlayers === yellowPlayers)
         {
-          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          if(player.inBase && rollResult >= 300 && firstTime)
           {
-            allPlayers[selector].arrayOfPlayers[index - 1].x = 650;
-            allPlayers[selector].arrayOfPlayers[index - 1].y = 400;
-            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.x = 650;
+            player.y = 400;
+            player.inBase = false;
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
           }
-          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          else if(!player.inBase && firstTime)
           {
-            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
-            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.totalMoves += rollResult;
+            handleLines(detectLocation(player), player);
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
-          }
-          else
-          {
-            turnSkipPreventer = 0;
-            for(let index = 0; index < 4; index++)
-            {
-              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
-              {
-                turnSkipPreventer++;
-              }
-            }
-            if(turnSkipPreventer >= 4)
-            {
-              canRollDice = true;
-            }
           }
         }
         else if(allPlayers[selector].arrayOfPlayers === bluePlayers)
         {
-          if(allPlayers[selector].arrayOfPlayers[index - 1].inBase && rollResult >= 300 && firstTime)
+          if(player.inBase && rollResult >= 300 && firstTime)
           {
-            allPlayers[selector].arrayOfPlayers[index - 1].x = 300;
-            allPlayers[selector].arrayOfPlayers[index - 1].y = 650;
-            allPlayers[selector].arrayOfPlayers[index - 1].inBase = false;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.x = 300;
+            player.y = 650;
+            player.inBase = false;
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
           }
-          else if(!allPlayers[selector].arrayOfPlayers[index - 1].inBase && firstTime)
+          else if(!player.inBase && firstTime)
           {
-            handleLines(detectLocation(allPlayers[selector].arrayOfPlayers[index - 1]), allPlayers[selector].arrayOfPlayers[index - 1]);
-            allPlayers[selector].arrayOfPlayers[index - 1].totalMoves += rollResult;
-            stepOver(allPlayers[selector].arrayOfPlayers[index - 1]);
+            player.totalMoves += rollResult;
+            handleLines(detectLocation(player), player);
+            stepOver(player);
+
             firstTime = false;
             canRollDice = true;
-          }
-          else
-          {
-            turnSkipPreventer = 0;
-            for(let index = 0; index < 4; index++)
-            {
-              if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
-              {
-                turnSkipPreventer++;
-              }
-            }
-            if(turnSkipPreventer >= 4)
-            {
-              canRollDice = true;
-            }
           }
         }
       }
-    })
+    });
   }
   return function()
   {
     selector++;
     firstTime = true;
+
     if(selector > allPlayers.length - 1)
     {
       selector = 0;
     }
-    turnSkipperFunction(selector);
+
     let intervalId = setInterval(() => {
       diceface(Math.ceil(Math.random() * 6), handleVisualOutput(selector));
     }, 100);
@@ -474,25 +429,28 @@ const select = () => {
       clearInterval(intervalId);
       diceface(rollResult / BLOCK_SIZE, handleVisualOutput(selector));
     }, 1000);
+
+    turnSkipperFunction(selector);
   }
 };
 
 // function for creating the players objects and will be pushed into the playersArray
-
 const createPlayers = (arrayOfPositions, playersArray, id, team, imagePath) => {
   let index = 0;
+
   for (pos of arrayOfPositions) {
     playersArray.push(
       new Players(pos.x, pos.y, `${id}${index}`, team, `${imagePath}${index}.png`)
     );
+
     index++;
   }
 };
 
 // pop-up div for players selection
-
 const userChoice = [];
 const popUpDiv = document.createElement("div");
+
 document.addEventListener("DOMContentLoaded", () => {
   popUpDiv.classList.add("popup");
   popUpDiv.innerHTML = `
@@ -578,17 +536,19 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`;
         const okButton = document.querySelector(".ok-button");
         doNotShowCheckbox = document.querySelector(".do-not-show-checkbox");
+
         okButton.addEventListener("click", function()
         {
           document.body.removeChild(popUpDiv);
           selectInstance = select();
           canRollDice = true;
-        })
+        });
+
         doNotShowCheckbox.addEventListener("click", function()
         {
           doNotShow = doNotShow === false ? true : false;
           localStorage.setItem("don't-show-again", String(doNotShow));
-        })
+        });
       }
       else
       {
@@ -681,7 +641,7 @@ const handleVisualOutput = (selector) =>
   {
     return 1;
   }
-}
+};
 
 const diceface = (value, index) => {
   switch (value) {
@@ -879,6 +839,7 @@ const handleLines = (line, player) => {
 };
 
 const rollDice = (callback) => {
+  DICE_SOUND_EFFECT.currentTime = 0;
   DICE_SOUND_EFFECT.play();
   rollResult = Math.ceil(Math.random() * 6);
   rollResult *= 50;
@@ -899,7 +860,7 @@ document.addEventListener("keyup", function(event)
   {
     isKeyPressed = false;
   }
-})
+});
 
 // define the game loop function
 const drawGame = () => {
@@ -907,26 +868,32 @@ const drawGame = () => {
   drawBases(true, 0, "red");
   drawBases(true, 1, "limegreen");
   drawBases(true, 2, "yellow");
+
   drawBases(true, 3, "#00BFFF");
   drawBases(false, 4, "red", 300, BLOCK_SIZE);
   drawBases(false, 5, "limegreen", BLOCK_SIZE, 300);
   drawBases(false, 6, "yellow", 300, BLOCK_SIZE);
+
   drawBases(false, 7, "#00BFFF", BLOCK_SIZE, 300);
   drawBases(false, 8, "red", BLOCK_SIZE, 100);
   drawBases(false, 9, "limegreen", 100, BLOCK_SIZE);
   drawBases(false, 10, "yellow", BLOCK_SIZE, 100);
+
   drawBases(false, 11, "#00BFFF", 100, BLOCK_SIZE);
   drawBases(false, 12, "red", BLOCK_SIZE, BLOCK_SIZE);
   drawBases(false, 13, "limegreen", BLOCK_SIZE, BLOCK_SIZE);
   drawBases(false, 14, "yellow", BLOCK_SIZE, BLOCK_SIZE);
+
   drawBases(false, 15, "#00BFFF", BLOCK_SIZE, BLOCK_SIZE);
   drawHorizontalBorders();
   drawVerticalBorders();
   drawPlayers(redPlayers);
+
   drawPlayers(greenPlayers);
   drawPlayers(yellowPlayers);
   drawPlayers(bluePlayers);
   drawSafeAreas();
+  
   if(allPlayers.length > 0)
   {
     for(let i = 0; i < allPlayers.length; i++)
@@ -991,6 +958,7 @@ const drawGame = () => {
       }
     }
   }
+
   requestAnimationFrame(drawGame);
 };
 
@@ -998,7 +966,8 @@ const drawGame = () => {
 drawGame();
 
 // just a debugging function
-setInterval(function()
+
+/*setInterval(function()
 {
   if(allPlayers.length > 0)
   {
@@ -1011,4 +980,4 @@ setInterval(function()
     }
   }
   console.log("\n");
-}, 5000);
+}, 5000);*/
