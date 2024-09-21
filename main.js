@@ -431,9 +431,6 @@ function winHandler(team)
       alert(`${winningPlayers[index].name} ${winPositions[index]} !`);
     }
 
-    console.log(allPlayers);
-    console.log(winningPlayers);
-
     document.removeEventListener("keydown", handleInput);
     document.removeEventListener("keydown", diceRollingHandler);
     document.removeEventListener("keyup", keyUpHandler);
