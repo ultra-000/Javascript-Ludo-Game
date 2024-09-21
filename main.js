@@ -221,7 +221,7 @@ const PLAYERS_INITIAL_POSITIONS = [
 
 let canRollDice = false;
 let selectInstance;
-const allPlayers = [];
+const allPlayers = []; // to hold all of the players teams inside of objects
 
 function whoGetSixGetsAnotherTurn(selector)
 {
@@ -297,12 +297,12 @@ function animatePlayerMovement(player, newX, newY, onComplete) {
   gsap.to(player, {
     x: newX,
     y: newY,
-    duration: 1, // Adjust duration for smoother or faster animations
+    duration: 1, // adjust duration for smoother or faster animations
     ease: "power1.inOut",
     onUpdate: function() {
-      drawGame(); // Continuously redraw the game as the player moves
+      drawGame(); // continuously redraw the game as the player moves
     },
-    onComplete: onComplete // Callback when the animation completes
+    onComplete: onComplete // callback when the animation completes
   });
 }
 
@@ -324,7 +324,7 @@ function stepOver(player) {
 
         let initialPosition;
 
-        // Match the steppedOverPlayer's team with the correct initial position
+        // Match the steppedOverPlayer with the correct initial position
         switch (steppedOverPlayer.team) {
           case "red":
             initialPosition = PLAYERS_INITIAL_POSITIONS[0][j];
@@ -343,7 +343,7 @@ function stepOver(player) {
             return;
         }
 
-        // Animate the player back to their initial position
+        // animate the player back to their initial position
         animatePlayerMovement(steppedOverPlayer, initialPosition.x, initialPosition.y, function()
         {
           steppedOverPlayer.inBase = true;
@@ -359,7 +359,7 @@ function stepOver(player) {
 
 const turnSkipperFunction = (selector) =>
 {
-  let turnSkipper = 0;
+  let turnSkipper = 0; // if this number is 4 or above the current turn will be skipped
   let winningPlayersCount = 0; // or ones that can't move excluding the ones inside the base
 
   for(let index = 0; index < 4; index++)
@@ -395,11 +395,11 @@ const winPositions = ["1st", "2nd", "3rd", "4th"];
 
 function winHandler(team)
 {
-  let winningPlayersNumber = 0;
+  let winningPlayersNumber = 0; // to hold the number of tokens that have won on the current team
 
   for(let index = 0; index < team.arrayOfPlayers.length; index++)
   {
-    if(team.arrayOfPlayers[index].hasWon)
+    if(team.arrayOfPlayers[index].hasWon) // checking if the token have won or not
     {
       winningPlayersNumber++;
     }
@@ -411,26 +411,24 @@ function winHandler(team)
     {
       team.won = true;
       winningPlayers.push(team);
-      allPlayers.splice(allPlayers.indexOf(team), 1);
+      allPlayers.splice(allPlayers.indexOf(team), 1); // remove the team that have won out of the game
     }
   }
 
   if((originalAllPlayersArrayLength - winningPlayers.length) <= 1)
   {
-    for(let index = 0; index < allPlayers.length; index++)
+    if(!allPlayers[0].won) // check the win state of the team.
     {
-      if(!allPlayers[index].won) // check the win state of the team. i can't use selector here because that will check the win state only for one array of players
-      {
-        allPlayers[index].won = true;
-        winningPlayers.push(allPlayers[index]); // push the team that haven't win yet because the game is coming to an end
-      }
+      allPlayers[0].won = true;
+      winningPlayers.push(allPlayers[0]); // push the team that haven't win yet because the game is coming to an end
     }
-
+    
     for(let index = 0; index < winningPlayers.length; index++)
     {
       alert(`${winningPlayers[index].name} ${winPositions[index]} !`);
     }
 
+    // remove input handling because the game is over
     document.removeEventListener("keydown", handleInput);
     document.removeEventListener("keydown", diceRollingHandler);
     document.removeEventListener("keyup", keyUpHandler);
@@ -789,27 +787,15 @@ const drawPlayers = (arrayOfPlayers) => {
 // and plays a simple animation
 const handleVisualOutput = (selector) =>
 {
-  if(allPlayers[selector].arrayOfPlayers === redPlayers)
-  {
-    return 0;
-  }
-  else if(allPlayers[selector].arrayOfPlayers === greenPlayers)
-  {
-    return 2;
-  }
-  else if(allPlayers[selector].arrayOfPlayers === yellowPlayers)
-  {
-    return 3;
-  }
-  else if(allPlayers[selector].arrayOfPlayers === bluePlayers)
-  {
-    return 1;
-  }
+  if(allPlayers[selector].arrayOfPlayers === redPlayers) { return 0; }
+  else if(allPlayers[selector].arrayOfPlayers === greenPlayers) { return 2; }
+  else if(allPlayers[selector].arrayOfPlayers === yellowPlayers) { return 3; }
+  else if(allPlayers[selector].arrayOfPlayers === bluePlayers) { return 1; }
 };
 
 const diceface = (value, index) => {
   switch (value) {
-    case 1:
+    case 1: 
       visualOutput[index].src = "assets/images/dice_face_one.png";
       break;
     case 2:
