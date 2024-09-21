@@ -790,7 +790,7 @@ const drawPlayers = (arrayOfPlayers) => {
 
 // two functions that outputs the result of the diceRollingHandler() function
 // and plays a simple animation
-const handleVisualOutput = (selector, team) =>
+const handleVisualOutput = (selector) =>
 {
   if(allPlayers[selector].arrayOfPlayers === redPlayers)
   {
