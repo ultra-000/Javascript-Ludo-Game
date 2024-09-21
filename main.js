@@ -1032,7 +1032,7 @@ document.addEventListener("keydown", diceRollingHandler);
 // define the game loop function
 const drawGame = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  /**drawBases(true, 0, "red");
+  drawBases(true, 0, "red");
 
   drawBases(true, 1, "limegreen");
   drawBases(true, 2, "yellow");
@@ -1058,7 +1058,7 @@ const drawGame = () => {
   drawBases(false, 15, "#00BFFF", BLOCK_SIZE, BLOCK_SIZE);
   drawHorizontalBorders();
 
-  drawVerticalBorders();**/
+  drawVerticalBorders();
   drawPlayers(redPlayers);
 
   drawPlayers(greenPlayers);
