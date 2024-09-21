@@ -14,10 +14,12 @@ const DICE_SOUND_EFFECT = new Audio(
   "assets/sound effects/dice_sound_effect.mp3"
 );
 
-let doNotShow = false;
-let isKeyPressed = false;
 canvas.width = 750;
 canvas.height = 750;
+
+let doNotShow = false;
+let isKeyPressed = false;
+let originalAllPlayersArrayLength = 0;
 
 const BLOCK_SIZE = 50;
 let horizontalBordersAmount = canvas.width / 50;
@@ -27,8 +29,6 @@ const htmlTag = document.querySelector("html");
 let xPossibleMoves;
 let yPossibleMoves;
 let rollResult;
-const maxMovesOnTrack = 2500;
-const maxMovesToWin = 300;
 
 const rectWidth = 300;
 const rectHeight = 300;
@@ -165,13 +165,13 @@ function drawSafeAreas()
 
 // Initializing the players
 class Players {
-  constructor(x, y, id, team, imagSrc) {
+  constructor(x, y, id, team, imgSrc) {
     this.x = x;
     this.y = y;
     this.width = BLOCK_SIZE;
     this.height = BLOCK_SIZE;
     this.image = new Image();
-    this.image.src = imagSrc;
+    this.image.src = imgSrc;
     this.id = id;
     this.team = team;
     this.totalMoves = 0;
@@ -222,6 +222,76 @@ const PLAYERS_INITIAL_POSITIONS = [
 let canRollDice = false;
 let selectInstance;
 const allPlayers = [];
+
+function whoGetSixGetsAnotherTurn(selector)
+{
+  if(rollResult >= 300)
+  {
+    selector -= 1;
+    if(selector < 0)
+    {
+      selector = allPlayers.length - 1;
+    }
+  }
+}
+
+// i have a better approach for this just change the x axis for green and blue, y axis for red and yellow
+// for green decrease the x axis by 50, for blue increase by 50
+// for red increase the y axis by 50, for yellow decrease by 50
+// after thinking about it my current approach is more dynamic :)
+function handleTransition(player, team)
+{
+  let isfirstTime = true;
+
+  if(player.onTrack)
+  {
+    isfirstTime = false;
+    player.totalMoves += rollResult;
+  }
+
+  if(player.totalMoves >= 2500)
+  {
+    player.onTrack = false;
+  }
+
+  // 2800 - player.totalMoves: possible moves
+  // rollResult <= 2800 - player.totalMoves - rollResult
+  // rollResult <= 2800 - (player.totalMoves - (!isfirstTime ? rollResult : 0))
+  if(!player.onTrack && rollResult <= 2800 - (player.totalMoves - (!isfirstTime ? rollResult : 0)))
+  {
+    player.totalMoves += isfirstTime ? rollResult : 0;
+    const specialTrackMoves = player.totalMoves - 2500;
+
+    switch(team.name)
+    {
+      case "Team Red":
+        player.x = 0;
+        player.y = 350;
+        player.x += specialTrackMoves;
+        break;
+      case "Team Green":
+        player.x = 350;
+        player.y = 0;
+        player.y += specialTrackMoves;
+        break;
+      case "Team Yellow":
+        player.x = 700;
+        player.y = 350;
+        player.x -= specialTrackMoves;
+        break;
+      case "Team Blue":
+        player.x = 350;
+        player.y = 700;
+        player.y -= specialTrackMoves;
+        break;
+    }
+  }
+
+  if(player.totalMoves === 2800)
+  {
+    player.hasWon = true;
+  }
+}
 
 function animatePlayerMovement(player, newX, newY, onComplete) {
   gsap.to(player, {
@@ -277,6 +347,7 @@ function stepOver(player) {
         animatePlayerMovement(steppedOverPlayer, initialPosition.x, initialPosition.y, function()
         {
           steppedOverPlayer.inBase = true;
+          steppedOverPlayer.onTrack = false;
           steppedOverPlayer.totalMoves = 0;
         });
         
@@ -289,150 +360,237 @@ function stepOver(player) {
 const turnSkipperFunction = (selector) =>
 {
   let turnSkipper = 0;
+  let winningPlayersCount = 0; // or ones that can't move excluding the ones inside the base
 
   for(let index = 0; index < 4; index++)
   {
-    if(allPlayers[selector].arrayOfPlayers[index].inBase && rollResult < 300)
+    const player = allPlayers[selector].arrayOfPlayers[index];
+
+    if(!player.hasWon && !player.inBase && rollResult <= 2800 - (player.totalMoves + rollResult))
+    {
+      canRollDice = false;
+      return;
+    }
+    // 2800 - player.totalMoves
+    else if(rollResult > 2800 - player.totalMoves || player.hasWon)
+    {
+      winningPlayersCount++;
+    }
+
+    if(player.inBase && rollResult < 300)
     {
       turnSkipper++;
     }
   }
 
-  if(turnSkipper >= 4)
-  {
-    canRollDice = true;
-  }
-  else
-  {
-    canRollDice = false;
-  }
+  canRollDice = turnSkipper >= (4 - winningPlayersCount);
 };
 
-const select = () => {
-  let firstTime = true;
-  let selector = Math.floor(Math.random() * allPlayers.length);
+// make a property that holds the win state of the players array
+// instead of making an array for the winning players
+// saving computer memory :)
+// problem is how will I know the 1st, 2nd, 3rd etc. position of the team ???
+const winningPlayers = [];
+const winPositions = ["1st", "2nd", "3rd", "4th"];
 
-  for(let index = 1; index < 5; index++)
+function winHandler(team)
+{
+  let winningPlayersNumber = 0;
+
+  for(let index = 0; index < team.arrayOfPlayers.length; index++)
   {
-    document.addEventListener("keydown", function(event)
+    if(team.arrayOfPlayers[index].hasWon)
     {
-      if(event.key === String(index))
-      {
-        const player = allPlayers[selector].arrayOfPlayers[index - 1];
-
-        if(allPlayers[selector].arrayOfPlayers === redPlayers)
-        {
-          if(player.inBase && rollResult >= 300 && firstTime)
-          {
-            player.x = 50;
-            player.y = 300;
-            player.inBase = false;
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-          else if(!player.inBase && firstTime)
-          {
-            player.totalMoves += rollResult;
-            handleLines(detectLocation(player), player);
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-        }
-        else if(allPlayers[selector].arrayOfPlayers === greenPlayers)
-        {
-          if(player.inBase && rollResult >= 300 && firstTime)
-          {
-            player.x = 400;
-            player.y = 50;
-            player.inBase = false;
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-          else if(!player.inBase && firstTime)
-          {
-            player.totalMoves += rollResult;
-            handleLines(detectLocation(player), player);
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-        }
-        else if(allPlayers[selector].arrayOfPlayers === yellowPlayers)
-        {
-          if(player.inBase && rollResult >= 300 && firstTime)
-          {
-            player.x = 650;
-            player.y = 400;
-            player.inBase = false;
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-          else if(!player.inBase && firstTime)
-          {
-            player.totalMoves += rollResult;
-            handleLines(detectLocation(player), player);
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-        }
-        else if(allPlayers[selector].arrayOfPlayers === bluePlayers)
-        {
-          if(player.inBase && rollResult >= 300 && firstTime)
-          {
-            player.x = 300;
-            player.y = 650;
-            player.inBase = false;
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-          else if(!player.inBase && firstTime)
-          {
-            player.totalMoves += rollResult;
-            handleLines(detectLocation(player), player);
-            stepOver(player);
-
-            firstTime = false;
-            canRollDice = true;
-          }
-        }
-      }
-    });
+      winningPlayersNumber++;
+    }
   }
-  return function()
-  {
-    selector++;
-    firstTime = true;
 
-    if(selector > allPlayers.length - 1)
+  if(winningPlayersNumber >= 4)
+  {
+    if(!team.won)
     {
-      selector = 0;
+      team.won = true;
+      winningPlayers.push(team);
+      allPlayers.splice(allPlayers.indexOf(team), 1);
+    }
+  }
+
+  if((originalAllPlayersArrayLength - winningPlayers.length) <= 1)
+  {
+    for(let index = 0; index < allPlayers.length; index++)
+    {
+      if(!allPlayers[index].won) // check the win state of the team. i can't use selector here because that will check the win state only for one array of players
+      {
+        allPlayers[index].won = true;
+        winningPlayers.push(allPlayers[index]); // push the team that haven't win yet because the game is coming to an end
+      }
     }
 
+    for(let index = 0; index < winningPlayers.length; index++)
+    {
+      alert(`${winningPlayers[index].name} ${winPositions[index]} !`);
+    }
+
+    console.log(allPlayers);
+    console.log(winningPlayers);
+
+    document.removeEventListener("keydown", handleInput);
+    document.removeEventListener("keydown", diceRollingHandler);
+    document.removeEventListener("keyup", keyUpHandler);
+  }
+}
+
+function handleInput(event)
+{
+  for(let index = 1; index < 5; index++)
+  {
+    if(event.key === String(index))
+    {
+      const team = allPlayers[this.selector];
+      const player = team.arrayOfPlayers[index - 1];
+      const maxMoves = 2800 - player.totalMoves;
+    
+      if(team.name === "Team Red")
+      {
+        if(player.inBase && rollResult >= 300 && this.firstTime)
+        {
+          player.x = 50;
+          player.y = 300;
+          player.inBase = false;
+          player.onTrack = true;
+          this.firstTime = false;
+          canRollDice = true;
+        }
+        else if(!player.inBase && !player.hasWon && rollResult <= maxMoves && this.firstTime)
+        {
+          handleTransition(player, team);
+          if(player.onTrack)
+          {
+          handleLines(detectLocation(player), player);
+          }
+    
+          stepOver(player);
+          winHandler(team);
+    
+          this.firstTime = false;
+          canRollDice = true;
+        }
+      }
+      else if(team.name === "Team Green")
+      {
+        if(player.inBase && rollResult >= 300 && this.firstTime)
+        {
+          player.x = 400;
+          player.y = 50;
+          player.inBase = false;
+          player.onTrack = true;
+          this.firstTime = false;
+          canRollDice = true;
+        }
+        else if(!player.inBase && !player.hasWon && rollResult <= maxMoves && this.firstTime)
+        {
+          handleTransition(player, team);
+          if(player.onTrack)
+          {
+            handleLines(detectLocation(player), player);
+          }
+    
+          stepOver(player);
+          winHandler(team);
+    
+          this.firstTime = false;
+          canRollDice = true;
+        }
+      }
+      else if(team.name === "Team Yellow")
+      {
+        if(player.inBase && rollResult >= 300 && this.firstTime)
+        {
+          player.x = 650;
+          player.y = 400;
+          player.inBase = false;
+          player.onTrack = true;
+          this.firstTime = false;
+          canRollDice = true;
+        }
+        else if(!player.inBase && !player.hasWon && rollResult <= maxMoves && this.firstTime)
+        {
+          handleTransition(player, team);
+          if(player.onTrack)
+          {
+            handleLines(detectLocation(player), player);
+          }
+      
+          stepOver(player);
+          winHandler(team);
+      
+          this.firstTime = false;
+          canRollDice = true;
+        }
+      }
+      else if(team.name === "Team Blue")
+      {
+        if(player.inBase && rollResult >= 300 && this.firstTime)
+        {
+          player.x = 300;
+          player.y = 650;
+          player.inBase = false;
+          player.onTrack = true;
+          this.firstTime = false;
+          canRollDice = true;
+        }
+        else if(!player.inBase && !player.hasWon && rollResult <= maxMoves && this.firstTime)
+        {
+          handleTransition(player, team);
+          if(player.onTrack)
+          {
+            handleLines(detectLocation(player), player);
+          }
+    
+          stepOver(player);
+          winHandler(team);
+    
+          this.firstTime = false;
+          canRollDice = true;
+        }
+      }
+    }
+  }
+}
+
+const select = () => {
+  const selectionRelatedStuff = {
+    firstTime: true,
+    selector: Math.floor(Math.random() * allPlayers.length)
+  }
+
+  document.addEventListener("keydown", handleInput.bind(selectionRelatedStuff));
+
+  return function()
+  {
+    selectionRelatedStuff.selector++;
+
+    if(selectionRelatedStuff.selector > allPlayers.length - 1)
+    {
+      selectionRelatedStuff.selector = 0;
+    }
+
+    selectionRelatedStuff.firstTime = true;
+
     let intervalId = setInterval(() => {
-      diceface(Math.ceil(Math.random() * 6), handleVisualOutput(selector));
+      diceface(Math.ceil(Math.random() * 6), handleVisualOutput(selectionRelatedStuff.selector));
     }, 100);
   
     setTimeout(() => {
       clearInterval(intervalId);
-      diceface(rollResult / BLOCK_SIZE, handleVisualOutput(selector));
+      diceface(rollResult / BLOCK_SIZE, handleVisualOutput(selectionRelatedStuff.selector));
     }, 1000);
 
-    turnSkipperFunction(selector);
+    turnSkipperFunction(selectionRelatedStuff.selector);
   }
 };
+
+// 54 block to reach winning line
 
 // function for creating the players objects and will be pushed into the playersArray
 const createPlayers = (arrayOfPositions, playersArray, id, team, imagePath) => {
@@ -488,7 +646,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // loop for attaching an event listener on the checkboxes
   // the event listener will be called when the checkboxes are clicked
   // which will add/remove the user choice in the userChoice array
-
   for (let index = 0; index < checkboxes.length; index++) {
     checkboxes[index].addEventListener("click", () => {
       if (checkboxes[index].checked) {
@@ -556,6 +713,7 @@ document.addEventListener("DOMContentLoaded", () => {
           selectInstance = select();
           canRollDice = true;
       }
+
       if (userChoice.includes("red-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[0],
@@ -565,10 +723,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "assets/images/red_ludo_token"
         );
         allPlayers.push({
-          selected: false,
-          arrayOfPlayers: redPlayers,
+          won: false,
+          name: "Team Red",
+          arrayOfPlayers: redPlayers
         });
       }
+
       if (userChoice.includes("green-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[1],
@@ -578,10 +738,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "assets/images/green_ludo_token"
         );
         allPlayers.push({
-          selected: false,
-          arrayOfPlayers: greenPlayers,
+          won: false,
+          name: "Team Green",
+          arrayOfPlayers: greenPlayers
         });
       }
+
       if (userChoice.includes("yellow-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[2],
@@ -591,10 +753,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "assets/images/yellow_ludo_token"
         );
         allPlayers.push({
-          selected: false,
-          arrayOfPlayers: yellowPlayers,
+          won: false,
+          name: "Team Yellow",
+          arrayOfPlayers: yellowPlayers
         });
       }
+
       if (userChoice.includes("blue-player")) {
         createPlayers(
           PLAYERS_INITIAL_POSITIONS[3],
@@ -604,10 +768,13 @@ document.addEventListener("DOMContentLoaded", () => {
           "assets/images/blue_ludo_token"
         );
         allPlayers.push({
-          selected: false,
-          arrayOfPlayers: bluePlayers,
+          won: false,
+          name: "Team Blue",
+          arrayOfPlayers: bluePlayers
         });
       }
+
+      originalAllPlayersArrayLength = allPlayers.length;
     } else {
       alert("Please select two players at least!");
     }
@@ -621,7 +788,7 @@ const drawPlayers = (arrayOfPlayers) => {
   });
 };
 
-// two functions that outputs the result of the rollDice() function
+// two functions that outputs the result of the diceRollingHandler() function
 // and plays a simple animation
 const handleVisualOutput = (selector) =>
 {
@@ -838,126 +1005,67 @@ const handleLines = (line, player) => {
   }
 };
 
-const rollDice = (callback) => {
-  DICE_SOUND_EFFECT.currentTime = 0;
-  DICE_SOUND_EFFECT.play();
-  rollResult = Math.ceil(Math.random() * 6);
-  rollResult *= 50;
-  callback();
-};
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && canRollDice && !isKeyPressed)
-  {
-    isKeyPressed = true;
-    rollDice(selectInstance);
-  }
-});
-
-document.addEventListener("keyup", function(event)
+function keyUpHandler(event)
 {
   if(event.key === "Enter")
   {
     isKeyPressed = false;
   }
-});
+}
+
+function diceRollingHandler(event)
+{
+  if(event.key === "Enter" && canRollDice && !isKeyPressed)
+  {
+    isKeyPressed = true;
+    DICE_SOUND_EFFECT.currentTime = 0;
+    DICE_SOUND_EFFECT.play();
+    rollResult = Math.ceil(Math.random() * 6);
+    rollResult *= 50;
+    selectInstance();
+  }
+}
+
+document.addEventListener("keyup", keyUpHandler);
+document.addEventListener("keydown", diceRollingHandler);
 
 // define the game loop function
 const drawGame = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBases(true, 0, "red");
+
   drawBases(true, 1, "limegreen");
   drawBases(true, 2, "yellow");
 
   drawBases(true, 3, "#00BFFF");
   drawBases(false, 4, "red", 300, BLOCK_SIZE);
+
   drawBases(false, 5, "limegreen", BLOCK_SIZE, 300);
   drawBases(false, 6, "yellow", 300, BLOCK_SIZE);
 
   drawBases(false, 7, "#00BFFF", BLOCK_SIZE, 300);
   drawBases(false, 8, "red", BLOCK_SIZE, 100);
+
   drawBases(false, 9, "limegreen", 100, BLOCK_SIZE);
   drawBases(false, 10, "yellow", BLOCK_SIZE, 100);
 
   drawBases(false, 11, "#00BFFF", 100, BLOCK_SIZE);
   drawBases(false, 12, "red", BLOCK_SIZE, BLOCK_SIZE);
+
   drawBases(false, 13, "limegreen", BLOCK_SIZE, BLOCK_SIZE);
   drawBases(false, 14, "yellow", BLOCK_SIZE, BLOCK_SIZE);
 
   drawBases(false, 15, "#00BFFF", BLOCK_SIZE, BLOCK_SIZE);
   drawHorizontalBorders();
+
   drawVerticalBorders();
   drawPlayers(redPlayers);
 
   drawPlayers(greenPlayers);
   drawPlayers(yellowPlayers);
+
   drawPlayers(bluePlayers);
   drawSafeAreas();
-  
-  if(allPlayers.length > 0)
-  {
-    for(let i = 0; i < allPlayers.length; i++)
-    {
-      for(let j = 0; j < 4; j++)
-      {
-        if(allPlayers[i].arrayOfPlayers[j].totalMoves >= 2600)
-        {
-          if(allPlayers[i].arrayOfPlayers === redPlayers)
-          {
-            const anotherPopup = document.createElement("div");
-            anotherPopup.classList.add("won");
-            anotherPopup.style.color = "red";
-            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
-            document.body.style.padding = "0px";
-            document.body.style.width = "100vw";
-            document.body.style.height = "100vh";
-            htmlTag.style.paddingTop = "0rem";
-            document.body.innerHTML = "";
-            document.body.append(anotherPopup);
-          }
-          else if(allPlayers[i].arrayOfPlayers === greenPlayers)
-          {
-            const anotherPopup = document.createElement("div");
-            anotherPopup.classList.add("won");
-            anotherPopup.style.color = "limegreen";
-            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
-            document.body.style.padding = "0px";
-            document.body.style.width = "100vw";
-            document.body.style.height = "100vh";
-            htmlTag.style.paddingTop = "0rem";
-            document.body.innerHTML = "";
-            document.body.append(anotherPopup);
-          }
-          else if(allPlayers[i].arrayOfPlayers === yellowPlayers)
-          {
-            const anotherPopup = document.createElement("div");
-            anotherPopup.classList.add("won");
-            anotherPopup.style.color = "yellow";
-            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
-            document.body.style.padding = "0px";
-            document.body.style.width = "100vw";
-            document.body.style.height = "100vh";
-            htmlTag.style.paddingTop = "0rem";
-            document.body.innerHTML = "";
-            document.body.append(anotherPopup);
-          }
-          else if(allPlayers[i].arrayOfPlayers === bluePlayers)
-          {
-            const anotherPopup = document.createElement("div");
-            anotherPopup.classList.add("won");
-            anotherPopup.style.color = "#00BFFF";
-            anotherPopup.innerHTML = `<h1>You have won!</h1>`;
-            document.body.style.padding = "0px";
-            document.body.style.width = "100vw";
-            document.body.style.height = "100vh";
-            htmlTag.style.paddingTop = "0rem";
-            document.body.innerHTML = "";
-            document.body.append(anotherPopup);
-          }
-        }
-      }
-    }
-  }
 
   requestAnimationFrame(drawGame);
 };
@@ -966,7 +1074,6 @@ const drawGame = () => {
 drawGame();
 
 // just a debugging function
-
 /*setInterval(function()
 {
   if(allPlayers.length > 0)
@@ -981,3 +1088,8 @@ drawGame();
   }
   console.log("\n");
 }, 5000);*/
+
+setTimeout(() =>
+{
+  console.log(originalAllPlayersArrayLength);
+}, 15000);
