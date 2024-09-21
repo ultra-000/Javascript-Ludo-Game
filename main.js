@@ -614,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
   popUpDiv.innerHTML = `
     <h2>Welcome to Ludo!</h2>
     <p>This is a simple implementation of the classic Ludo game.</p>
-    <h4>Please choose your plyers:</h4>
+    <h4>Please choose your players:</h4>
     <div class="choose-container">
     <div class="parent">
     <span class="red-player"></span>
@@ -790,7 +790,7 @@ const drawPlayers = (arrayOfPlayers) => {
 
 // two functions that outputs the result of the diceRollingHandler() function
 // and plays a simple animation
-const handleVisualOutput = (selector) =>
+const handleVisualOutput = (selector, team) =>
 {
   if(allPlayers[selector].arrayOfPlayers === redPlayers)
   {
@@ -1088,8 +1088,3 @@ drawGame();
   }
   console.log("\n");
 }, 5000);*/
-
-setTimeout(() =>
-{
-  console.log(originalAllPlayersArrayLength);
-}, 15000);
