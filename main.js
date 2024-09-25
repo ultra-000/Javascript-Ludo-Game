@@ -19,7 +19,6 @@ canvas.height = 750;
 
 let doNotShow = false;
 let isKeyPressed = false;
-let originalAllPlayersArrayLength = 0;
 
 const BLOCK_SIZE = 50;
 let horizontalBordersAmount = canvas.width / 50;
@@ -415,7 +414,7 @@ function winHandler(team)
     }
   }
 
-  if((originalAllPlayersArrayLength - winningPlayers.length) <= 1)
+  if((allPlayers.length + winningPlayers.length) - winningPlayers.length <= 1) // if winning teams exceeds the limit the game ends
   {
     if(!allPlayers[0].won) // check the win state of the team.
     {
@@ -768,8 +767,6 @@ document.addEventListener("DOMContentLoaded", () => {
           arrayOfPlayers: bluePlayers
         });
       }
-
-      originalAllPlayersArrayLength = allPlayers.length;
     } else {
       alert("Please select two players at least!");
     }
