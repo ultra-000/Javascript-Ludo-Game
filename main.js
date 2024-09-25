@@ -8,7 +8,6 @@
 const canvas = document.getElementById("playground");
 /** @type {CanvasRenderingContext2D} */
 const ctx = canvas.getContext("2d");
-const output = document.getElementById("output");
 const visualOutput = document.querySelectorAll(".visual-output");
 const DICE_SOUND_EFFECT = new Audio(
   "assets/sound effects/dice_sound_effect.mp3"
@@ -23,7 +22,6 @@ let isKeyPressed = false;
 const BLOCK_SIZE = 50;
 let horizontalBordersAmount = canvas.width / 50;
 let verticalBordersAmount = canvas.height / 50;
-const htmlTag = document.querySelector("html");
 
 let xPossibleMoves;
 let yPossibleMoves;
@@ -163,8 +161,10 @@ function drawSafeAreas()
 }
 
 // Initializing the players
-class Players {
-  constructor(x, y, id, team, imgSrc) {
+class Players
+{
+  constructor(x, y, id, team, imgSrc)
+  {
     this.x = x;
     this.y = y;
     this.width = BLOCK_SIZE;
@@ -179,7 +179,9 @@ class Players {
     this.onTrack = false;
     this.hasWon = false;
   }
-  draw() {
+  
+  draw()
+  {
     ctx.beginPath();
     ctx.drawImage(this.image, this.x, this.y);
     ctx.closePath();
